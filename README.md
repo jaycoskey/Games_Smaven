@@ -1,6 +1,6 @@
-= Smaven README =
+# Smaven README
 
-== Description ==
+## Description
 Words that can be played in games such as Scrabble need to meet a few constraints:
 * Board constraint: Letters (a.k.a. tiles) played must fit on the board, must form a contiguous sequence of tiles, etc.
 * Rack constraint: Letters played come from the players "rack". 
@@ -20,18 +20,19 @@ Note that the GADDAG would contain 7 sequences for the word "explain".
 This repo contains a program (in development) to find words playable on a given board, with a given rack, and a given dictionary.
 It might be expanded to allow human vs computer competition, or even use machine learning to hone the computer's strategy.
 
-== Design ==
-=== Modes ===
+## Design
+
+### Modes
   * Help
   * Play: Human vs Computer
   * Play: Human vs Human
   * Play: Computer vs Computer
 
-=== Console version ===
+### Console version
 * Design of program to find playable words for a given Board/Rack/Dictionary? CLI arguments?
 * If there will be a text (i.e., ASCII) version, how to display square types along with letters played?
 
-=== GUI version ===
+### GUI version
 * GUI layout?
 * Colors?
   * Two players:   2 of aquamarine, blush pink, dolly
@@ -76,10 +77,10 @@ It might be expanded to allow human vs computer competition, or even use machine
 | ff_ff_7f| dolly           |5| very light yellow            |
 | ff_ff_ff| WHITE           |6|                              |
 
-=== Implementation ===
+### Implementation
 * Should the GADDAG (class GTree) be compressed?
 
-== Future plans ==
+## Future plans
 * Hex board? (No changes needed for GADDAG.)
 * Evolve optimal strategy by having the computer play itself?
   * Playing the highest-scoring move in every round likely isn't the best strategy.
