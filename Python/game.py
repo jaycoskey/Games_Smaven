@@ -18,7 +18,8 @@ class GameState(Enum):
 class Game:
     # TODO: self.board : Board
     # TODO: self.players: List[Player]  # In order
-    #
+
+    # TODO: self.bag: Bag
     # TODO: self.config: Dict
     # TODO: self.cur_move_id: int
     # TODO: self.cur_player_id: int
