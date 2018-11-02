@@ -22,11 +22,22 @@ It might be expanded to allow human vs computer competition, or even use machine
 
 ## Design
 
-### Modes
-  * Help
-  * Play: Human vs Computer
-  * Play: Human vs Human
-  * Play: Computer vs Computer
+### Commands and options
+
+| Command                     | Args                 | Notes                                              |
+| --------------------------- | -------------------- | -------------------------------------------------- |
+| Help                        | --help               |                                                    |
+| Verbose                     | -v --verbose         |                                                    |
+| Specify config file         | -c --config CONFIG   |                                                    |
+| Set display mode to text    | -t --text            |                                                    |
+| Set display mode to GUI     | -g --gui             |                                                    |
+| Specify layout              | -l --layout LAYOUT   | LAYOUT refers to file or config entry (with '@')   |
+| Command: Search             | search               | Search for words & show results                    |
+|   Specify board             |   -b --board BOARD   | BOARD refers to file or config entry (with '@')    |
+|   Specify (letters in rack) |   -r --rack RACK     | RACK is a string, such as "kwyjibo"                |
+| Commnad: Experiment         | experiment           | Load/Save games, inspect GTree data structure, etc.|
+| Command: Players            | players (-hh|-hc|-cc)| Play games (Human vs Human, etc.)                  |
+| Command: Zen                | zen                  | Develop a computer strategy via training           |
 
 ### Console version
 * Design of program to find playable words for a given Board/Rack/Dictionary? CLI arguments?
@@ -39,8 +50,8 @@ It might be expanded to allow human vs computer competition, or even use machine
   * Three players: 3 of aquamarine, blush pink, dolly
   * Four+ players: Above + aqua, malibu, mint green, fuschia, vivid tangerine, yellow
 
-| Hex | Color name | Brightness | Notes                      |
-| --- | -----------| ---------- | ---------------------------|
+| Hex | Color name | Brightness | Notes                       |
+| --- | -----------| ---------- | ----------------------------|
 | #00_00_00| BLACK           |0|                              |
 | #00_00_7f| navy blue       |1| dark blue                    |
 | #00_00_ff| BLUE            |2|                              |
@@ -81,6 +92,15 @@ It might be expanded to allow human vs computer competition, or even use machine
 * Should the GADDAG (class GTree) be compressed?
 
 ## Future plans
+
+### Short-term plans
+* TODO: Complete solve feature
+* TODO: Support game state serialization/deserialization
+* TODO: Support game+history serialization/deserialization
+* TODO: GTree.find_words efficiency
+
+
+### Long-term plans
 * Hex board? (No changes needed for GADDAG.)
 * Evolve optimal strategy by having the computer play itself?
   * Playing the highest-scoring move in every round likely isn't the best strategy.
