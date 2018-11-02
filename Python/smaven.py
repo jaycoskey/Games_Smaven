@@ -114,6 +114,9 @@ if __name__ == '__main__':
     # TODO: Output files containing game stats, and modified weights
 
     args = parser.parse_args()
+    if args.command not in [Command.SEARCH, Command.EXPERIMENT, Command.PLAYERS, Command.ZEN]:
+        parser.print_help()
+        parser.exit()
 
     with open('config.yml', 'r') as config_stream:
         try:
