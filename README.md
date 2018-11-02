@@ -24,20 +24,20 @@ It might be expanded to allow human vs computer competition, or even use machine
 
 ### Commands and options
 
-| Command                     | Args                 | Notes                                              |
-| --------------------------- | -------------------- | -------------------------------------------------- |
-| Help                        | --help               |                                                    |
-| Verbose                     | -v --verbose         |                                                    |
-| Specify config file         | -c --config CONFIG   |                                                    |
-| Set display mode to text    | -t --text            |                                                    |
-| Set display mode to GUI     | -g --gui             |                                                    |
-| Specify layout              | -l --layout LAYOUT   | LAYOUT refers to file or config entry (with '@')   |
-| Command: Search             | search               | Search for words & show results                    |
-|   Specify board             |   -b --board BOARD   | BOARD refers to file or config entry (with '@')    |
-|   Specify (letters in rack) |   -r --rack RACK     | RACK is a string, such as "kwyjibo"                |
-| Commnad: Experiment         | experiment           | Load/Save games, inspect GTree data structure, etc.|
-| Command: Players            | players (-hh|-hc|-cc)| Play games (Human vs Human, etc.)                  |
-| Command: Zen                | zen                  | Develop a computer strategy via training           |
+| Command                     | Args                   | Notes                                              |
+| --------------------------- | ---------------------- | -------------------------------------------------- |
+| Help                        | --help                 |                                                    |
+| Verbose                     | -v --verbose           |                                                    |
+| Specify config file         | -c --config CONFIG     |                                                    |
+| Set display mode to text    | -t --text              |                                                    |
+| Set display mode to GUI     | -g --gui               |                                                    |
+| Specify layout              | -l --layout LAYOUT     | LAYOUT refers to file or config entry (with '@')   |
+| Command: Search             | search                 | Search for words & show results                    |
+|   Specify board             |   -b --board BOARD     | BOARD refers to file or config entry (with '@')    |
+|   Specify (letters in rack) |   -r --rack RACK       | RACK is a string, such as "kwyjibo"                |
+| Commnad: Experiment         | experiment             | Load/Save games, inspect GTree data structure, etc.|
+| Command: Players            | players (-hh\|-hc\|-cc)| Play games (Human vs Human, etc.)                  |
+| Command: Zen                | zen                    | Develop a computer strategy via training           |
 
 ### Console version
 * Design of program to find playable words for a given Board/Rack/Dictionary? CLI arguments?

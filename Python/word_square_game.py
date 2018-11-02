@@ -13,8 +13,15 @@ from player import Player
 from util import Util
 
 
+class Command:
+    SEARCH = 'search'
+    EXPERIMENT = 'experiment'
+    PLAYERS = 'players'
+    ZEN = 'zen'
+
+
 def main(config, args):
-    if args.command == 'search':
+    if args.command == Command.SEARCH:
         # TODO: search ==> Initialize Board (BoardLayout, Board) ==> Enter rack & find words
         if args.layoutfile is None or len(args.layoutfile) == 0:
             raise ValueError('search feature requires layoutfile to be set')
@@ -46,13 +53,13 @@ def main(config, args):
 
         print('Search feature not yet implemented')
 
-    elif args.experiment:
+    elif args.command == Command.EXPERIMENT:
         # TODO: experiment ==> Init Board (BoardLayout, Board, Bag); start interactive shell (search/load/replay/etc.)
         raise NotImplementedError('Lab feature not yet implemented')
-    elif args.players:
+    elif args.command == Command.PLAYERS:
         # TODO: players ==> Init Game (Players, BoardLayout, Board, Bag); play_game(...)
         raise NotImplementedError('Specification of players not yet implemented')
-    elif args.zen:  # Train computer strategy using reinforcement learning
+    elif args.command == Command.ZEN:  # Train computer strategy using reinforcement learning
         # TODO: zen ==> Init Game (Players w/ strategy, BoardLayout, Board, Bag); play_game(...)
         raise NotImplementedError('Evolve feature not yet implemented')
     else:
@@ -60,11 +67,6 @@ def main(config, args):
 
 
 if __name__ == '__main__':
-    CMD_SEARCH = 'search'
-    CMD_EXPERIMENT = 'experiment'
-    CMD_PLAYERS = 'players'
-    CMD_ZEN = 'zen'
-
     # Argument summary:
     # a:           b:board   c:config  d:dictionary e:experiment
     # f:           g:gui     h:        i:           j:
@@ -81,28 +83,28 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', action='store_true')
 
     display_mode_group = parser.add_mutually_exclusive_group(required=False)
-    display_mode_group.add_argument('-t', '--text', dest='display_mode', const='text')
-    display_mode_group.add_argument('-g', '--gui', dest='display_mode', const='gui')
+    display_mode_group.add_argument('-t', '--text', nargs='?', dest='display_mode', const='text')
+    display_mode_group.add_argument('-g', '--gui', nargs='?', dest='display_mode', const='gui')
     parser.set_defaults(display_mode='text')
 
     subparsers = parser.add_subparsers(title='commands', dest='command')
 
     # Commands
-    parser_search = subparsers.add_parser(CMD_SEARCH, help='Find valid moves for a given board, rack, and dictionary')
-    parser_experiment = subparsers.add_parser(CMD_EXPERIMENT, help='Use a shell to experiment')
-    parser_players = subparsers.add_parser(CMD_PLAYERS, help='Play a game: Human vs Human, or Computer vs Human')
-    parser_zen = subparsers.add_parser(CMD_ZEN, help='Develop a strategy by playing Computer vs Computer')
+    parser_search = subparsers.add_parser(Command.SEARCH, help='Find valid moves for a given board, rack, and dictionary')
+    parser_experiment = subparsers.add_parser(Command.EXPERIMENT, help='Use a shell to experiment')
+    parser_players = subparsers.add_parser(Command.PLAYERS, help='Play a game: Human vs Human, or Computer vs Human')
+    parser_zen = subparsers.add_parser(Command.ZEN, help='Develop a strategy by playing Computer vs Computer')
 
     # Search args
     parser_search.add_argument('-b', '--boardfile', help='File that contains letters present on board', default='@board_scrabble_test1')
     parser_search.add_argument('-r', '--rack', help='Rack that contains letters to be used in search', default='etaoins')
 
     # Player args
-    players_group = parser_players.add_mutually_exclusive_group(required=False)
-    parser_players.add_argument('--hh', dest='players_mode', const='hh', help='Human vs Human')
-    parser_players.add_argument('--hc', dest='players_mode', const='hc', help='Human vs Computer')
-    parser_players.add_argument('--cc', dest='players_mode', const='cc', help='Computer vs Computer')
-    parser_players.set_default(players_mode = 'hh')
+    players_group = parser_players.add_mutually_exclusive_group(required=True)
+    parser_players.add_argument('--hh', nargs='?', dest='players_mode', const='hh', help='Human vs Human')
+    parser_players.add_argument('--hc', nargs='?', dest='players_mode', const='hc', help='Human vs Computer')
+    parser_players.add_argument('--cc', nargs='?', dest='players_mode', const='cc', help='Computer vs Computer')
+    parser_players.set_defaults(players_mode = 'hh')
 
     # TODO: Specify how players join and how their identity & connection info is obtained
     # TODO: Specify how input is obtained: keyboard/server:port/etc.
