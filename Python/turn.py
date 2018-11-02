@@ -13,9 +13,9 @@ class TurnType(Enum):
 
 class Turn:
     def __init__(self):
-        # TODO: self.move_num: int
+        # TODO: self.turn_num: int
+        # TODO: self.turn_type: TurnType
         # TODO: self.player_id: int
-        # TODO: self.move_type: MoveType
         # TODO: self.move: Move
         # TODO: self.letters_discarded: str
         # TODO: self.letters_drawn: str

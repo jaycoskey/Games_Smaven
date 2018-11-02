@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # A node in a GADDAG
+# TODO: Support serialization & deserialization.
 class GNode:
     # BOW_CHAR = '^'  # Mark the beginning of a word in a Trie (e.g., can happen when the hook is the end of a word)
     #                   The path traversed this far spells out a word in reverse.
