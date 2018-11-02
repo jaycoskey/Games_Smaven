@@ -4,6 +4,7 @@ README: |
 introduction: |
     Welcome to WordSquareGame!
 board_layout: board_layout_scrabble
+dictionary_file: /usr/share/dict/words
 letter_counts: letter_counts_scrabble_en
 letter_points: letter_points_scrabble_en
 player_colors:
@@ -26,7 +27,7 @@ board_layout_scrabble: |
     ..D...d.d...D..
     .D...t...t...D.
     T..d...T...d..T
-board_layout_scrabble: |
+board_layout_wwf: |
     ...T..t.t..T...
     ..d..D...D..d..
     .d..d.....d..d.
