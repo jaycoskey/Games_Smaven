@@ -12,7 +12,6 @@ class Move:
 # Note: We'll use uppercase to represent the character used for blank tiles, and lowercase for all others.
 class PlacedLetter:
     def __init__(self):
-        # TODO: self.player_id: int
         # TODO: self.char: str
         # TODO: self.square: Square
         pass
@@ -21,7 +20,6 @@ class PlacedLetter:
 class PlacedWord:
     def __init__(self):
         # TODO: self.word: str
-        # TODO: self.player_id: int
         # TODO: self.square_begin: str
         # TODO: self.square_end: str
         pass
