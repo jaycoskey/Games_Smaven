@@ -37,7 +37,7 @@ It might be expanded to allow human vs computer competition, or even use machine
 |   Specify (letters in rack) |   -r --rack RACK       | RACK is a string, such as "kwyjibo"                |
 | Commnad: Experiment         | experiment             | Load/Save games, inspect GTree data structure, etc.|
 | Command: Players            | players (-hh\|-hc\|-cc)| Play games (Human vs Human, etc.)                  |
-| Command: Zen                | zen                    | Develop a computer strategy via training           |
+| Command: AI                 | ai                     | Develop a computer strategy via training           |
 
 ### Console version
 * Design of program to find playable words for a given Board/Rack/Dictionary? CLI arguments?
@@ -91,35 +91,50 @@ It might be expanded to allow human vs computer competition, or even use machine
 ### Implementation
 * Should the GADDAG (class GTree) be compressed?
 
-## Future plans
+## Task backlog
+* TODO: Complete search feature
+* TODO: BTree unit tests
+* TODO: Search tests (See below)
+* TODO: Compute score
+* TODO: GTree.find_words efficiency. Any duplicate evaluation of states that can be efficiently removed?
+* TODO: Support (text) human vs human console play: move, swap, pass, resign.
+* TODO: Support game state serialization/deserialization (incl. turn history)
+* TODO: Implement GUI versions
+* TODO: Support human vs computer game play. (Initially, computer chooses highest-scoring move)
+* TODO: Distributed system with clients & server
+* TODO: Hex board?
+* TODO: AI feature (See below)
 
-### Short-term plans
-* TODO: Complete solve feature
-* TODO: Support game state serialization/deserialization
-* TODO: Support game+history serialization/deserialization
-* TODO: GTree.find_words efficiency
+### Search tests
+* TODO: Search test (fill contiguous): Board:"aa.....k", Rack:adrrvyz. Find aardvark
+* TODO: Search test (fill contiguous with blank): Board:"aa.....k", Rack:rd_aryz. Find aardvark
+* TODO: Any search test that finds words should find at least those words when a letter tile is replaced by a blank.
+* TODO: Search test (noncontiguous): Board:ear.hen.are, Rack:xtywz. Find "earthenware"
+* TODO: Search test (board edge): Board:"^liqui", Rack:'dateion'. Find liquid, liquidate, liquidation
+* TODO: Search test (crossing words): Board:"zebra", Rack:ooca. Find zoo, cab, aa (x2) 
+* TODO: Search test (parallel word): Board:"name", "wend", Rack:enox. Find (primary)oxen, (secondaries)now, axe, men, end
 
-
-### Long-term plans
-* Hex board? (No changes needed for GADDAG.)
-* Evolve optimal strategy by having the computer play itself?
-  * Playing the highest-scoring move in every round likely isn't the best strategy.
-  * For example, playing a BLANK tile to get one additional point is probably suboptimal.
-* Potential reinforcement learning features include:
-  * Points from play
-  * Expected value of opponent's next move
+### AI feature: Training computer strategy
+* Evolve computer strategy via Computer vs Computer play
+  * Note: Choosing the highest-scoring move in every round is not the best strategy.
+    * For example, playing a BLANK tile to get one additional point is probably suboptimal.
+* Potential turn features for reinforcement learning:
+  * Points earned
+  * Expected value of opponent's next turn
     * Sample "best" move from 100 samples taken from the distribution of remaining files
     * For "best", start by assuming that opponent plays highest-scoring move
   * Proportion of vowels in rack
-  * Is BLANK in rack?
-  * Is S in rack?
-  * Is J in rack?
-  * Is Q in rack?
-  * Is X in rack?
-  * Is Z in rack?
-  * Tiles remaining in bag
+  * Is BLANK in rack / on board / in bag? (Scrabble: 2)
+  * Is S in rack / on board / in bag? (Scrabble: 4)
+  * Is J in rack / on board / in bag? (Scrabble: 1)
+  * Is Q in rack / on board / in bag? (Scrabble: 1)
+  * Is X in rack / on board / in bag? (Scrabble: 1)
+  * Is Z in rack / on board / in bag? (Scrabble: 1)
+  * Number of tiles remaining in bag (Scrabble: 100, WWF: 94)
   * Count of Qs not yet played
   * Count of Us not yet played
-  * Does play leave double word square for opponent's next move?
-  * Does play leave triple word square for opponent's next move?
+  * Distances (perpendicular, parallel) to closest triple word square for opponent's next move
+  * Distances (perpendicular, parallel) to closest double word square for opponent's next move
+  * Distances (perpendicular, parallel) to closest triple letter square for opponent's next move
+  * Distances (perpendicular, parallel) to closest double letter square for opponent's next move
   * Etc.
