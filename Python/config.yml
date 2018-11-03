@@ -3,7 +3,7 @@ README: |
     Config for word-array games such as Scrabble and Words With Friends
 introduction: |
     Welcome to WordSquareGame!
-board_layout: board_layout_scrabble
+board_layout: layout_scrabble
 dictionary_file: /usr/share/dict/words
 letter_counts: letter_counts_scrabble_en
 letter_points: letter_points_scrabble_en
@@ -11,6 +11,10 @@ player_colors:
     - 1: "aqua"
     - 2: "tangerine"
 player_count: 2
+player_names:
+    - 1: "Amy"
+    - 1: "Bob"
+rack_size: 7
 layout_scrabble: |
     T..d...T...d..T
     .D...t...t...D.
