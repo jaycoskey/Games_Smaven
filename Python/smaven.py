@@ -1,4 +1,4 @@
-#!//usr/bin/env python
+#!/usr/bin/env python
 
 import argparse
 import string
@@ -10,6 +10,7 @@ from game import Game
 from gtree import GTree
 from move import Move, PlacedLetter, PlacedWord
 from player import Player
+from turn import Turn
 from util import Util
 
 
@@ -17,7 +18,7 @@ class Command:
     SEARCH = 'search'
     EXPERIMENT = 'experiment'
     PLAYERS = 'players'
-    ZEN = 'zen'
+    AI = 'ai'
 
 
 def main(config, args):
@@ -51,29 +52,34 @@ def main(config, args):
             board.print()
             print(f'INFO: Rack: {rack}')
 
-        print('Search feature not yet implemented')
+        print('Warning: Search feature not yet implemented')
 
     elif args.command == Command.EXPERIMENT:
         # TODO: experiment ==> Init Board (BoardLayout, Board, Bag); start interactive shell (search/load/replay/etc.)
-        raise NotImplementedError('Lab feature not yet implemented')
+        raise NotImplementedError('Experiment feature not yet implemented')
     elif args.command == Command.PLAYERS:
         # TODO: players ==> Init Game (Players, BoardLayout, Board, Bag); play_game(...)
-        raise NotImplementedError('Specification of players not yet implemented')
-    elif args.command == Command.ZEN:  # Train computer strategy using reinforcement learning
-        # TODO: zen ==> Init Game (Players w/ strategy, BoardLayout, Board, Bag); play_game(...)
-        raise NotImplementedError('Evolve feature not yet implemented')
+        char2points = {}
+        for pts in config.letter_points_scrabble_en:  # TODO: Allow choice of point mapping 
+            for char in config.letter_points_scrabble_en[pts]:
+                char2points[char] = pts
+        # TODO: ...
+        raise NotImplementedError('Players specification not yet implemented')
+    elif args.command == Command.AI:  # Train computer strategy using reinforcement learning
+        # TODO: ai ==> Init Game (Players w/ strategy, BoardLayout, Board, Bag); play_game(...)
+        raise NotImplementedError('AI feature not yet implemented')
     else:
         raise ValueError(f'Feature not specified')
 
 
 if __name__ == '__main__':
     # Argument summary:
-    # a:           b:board   c:config  d:dictionary e:experiment
+    # a:ai         b:board   c:config  d:dictionary e:experiment
     # f:           g:gui     h:        i:           j:
-    # k:           l:layout  m:        n:           o:output?
-    # p:players    q:        r:rack    s:           t:text
+    # k:           l:layout  m:        n:           o:logfile?
+    # p:players    q:        r:rack    s:skill_lvl? t:text
     # u:           v:verbose w:        x:           y:
-    # z:zen
+    # z:
     #
     prog_description = 'Toolbox for word square games, such as Scrabble and Words With Friends'
     parser = argparse.ArgumentParser(prog=sys.argv[0], description=prog_description)
@@ -93,7 +99,7 @@ if __name__ == '__main__':
     parser_search = subparsers.add_parser(Command.SEARCH, help='Find valid moves for a given board, rack, and dictionary')
     parser_experiment = subparsers.add_parser(Command.EXPERIMENT, help='Use a shell to experiment')
     parser_players = subparsers.add_parser(Command.PLAYERS, help='Play a game: Human vs Human, or Computer vs Human')
-    parser_zen = subparsers.add_parser(Command.ZEN, help='Develop a strategy by playing Computer vs Computer')
+    parser_ai = subparsers.add_parser(Command.AI, help='Develop a strategy by playing Computer vs Computer')
 
     # Search args
     parser_search.add_argument('-b', '--boardfile', help='File that contains letters present on board', default='@board_scrabble_test1')
@@ -109,12 +115,12 @@ if __name__ == '__main__':
     # TODO: Specify how players join and how their identity & connection info is obtained
     # TODO: Specify how input is obtained: keyboard/server:port/etc.
 
-    # Zen args (feature selection not modifiable from command line)
+    # AI args (feature selection not modifiable from command line)
     # TODO: Input file containing weights
     # TODO: Output files containing game stats, and modified weights
 
     args = parser.parse_args()
-    if args.command not in [Command.SEARCH, Command.EXPERIMENT, Command.PLAYERS, Command.ZEN]:
+    if args.command not in [Command.SEARCH, Command.EXPERIMENT, Command.PLAYERS, Command.AI]:
         parser.print_help()
         parser.exit()
 
