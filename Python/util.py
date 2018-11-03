@@ -8,6 +8,10 @@ Square = namedtuple('Square', ['x', 'y'])
 
 class Util:
     @staticmethod
+    def add_sq_bdir(sq, bdir):
+        return Square(sq.x + bdir.x, sq.y + bdir.y)
+
+    @staticmethod
     def do_rows_form_square(rows):
         row_count = len(rows)
         are_rows_same_length = all(map(lambda row: len(row) == row_count, rows))
