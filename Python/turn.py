@@ -1,23 +1,36 @@
 #!/usr/bin/env python
 
-from enum import Enum
+from enum import Enum, auto
+
+from move import Move
 
 
 class TurnType(Enum):
-    NO_TURN = 0
-    MOVE = 1
-    SWAP = 2
-    PASS = 3
-    RESIGN = 4
+    MOVE = auto()
+    SWAP = auto()
+    PASS = auto()
+    RESIGN = auto()
 
 
 class Turn:
-    def __init__(self):
-        # TODO: self.turn_num: int
-        # TODO: self.turn_type: TurnType
-        # TODO: self.player_id: int
-        # TODO: self.move: Move
-        # TODO: self.letters_discarded: str
-        # TODO: self.letters_drawn: str
-        # TODO: self.points: str
-        pass
+    next_turn_num = 1
+
+    def __init__(self, player_id:int, turn_type:TurnType, points:int, move:Move=None, drawn:str=None, discarded:str=None):
+        if turn_type == TurnType.MOVE:
+            assert(move and len(drawn) > 0 and not discarded)
+        elif turn_type == TurnType.SWAP:
+            assert(not move and len(drawn) > 0 and len(discarded) > 0 and len(drawn) == len(discarded))
+        elif turn_type == TurnType.PASS:
+            assert(points == 0 and not move and not drawn and not discarded)
+        elif turn_type == TurnType.RESIGN:
+            assert(points == 0 and not move and not drawn and not discarded)
+
+        self.turn_num = Turn.next_turn_num
+        Turn.next_turn_num += 1
+
+        self.player_id = player_id
+        self.turn_type = turn_type
+        self.points = points
+        self.move = move
+        self.letters_drawn = drawn
+        self.letters_discarded = discarded
