@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-from enum import Enum
-from typing import List
-from util import Util
+from enum import Enum, auto
+from move import Move, PlacedLetter, PlacedWord
+from typing import Dict, List
+from util import Square, Util
 
 
 # We store the board as a list of rows [i.e., (y, x)]. Should these directions be stored as (y, x)?
@@ -21,30 +22,87 @@ class BoardDirection(Enum):
         elif brddir == BoardDirection.RIGHT: return BoardDirection.LEFT
         elif brddir == BoardDirection.DOWN: return BoardDirection.UP
 
+
 class BoardSquareType(Enum):
-    BLANK = 0
-    CENTER = 1
-    DOUBLE_LETTER = 2
-    DOUBLE_WORD = 3
-    TRIPLE_LETTER = 4
-    TRIPLE_WORD = 5
+    BLANK = auto()
+    CENTER = auto()
+    DOUBLE_LETTER = auto()
+    DOUBLE_WORD = auto()
+    TRIPLE_LETTER = auto()
+    TRIPLE_WORD = auto()
 
 
 class Board:
-    def __init__(self, layout: 'BoardLayout', rows:List[str]=None):
+    def __init__(self, layout:'BoardLayout', rows:List[str]=None):
         self.layout: BoardLayout = layout
         self.letters: List[List[str]] = [[c for c in row] for row in rows]
 
-    def get_hooks():
-        # TODO: Move #1: The only hook is the center square
-        # TODO: Later moves: Hooks are empty spaces next to played words
-        pass
+    # TODO: More efficient general solution? Set intersection? More efficient special cases (e.g., sparse board)?
+    def hooks(self, turn_num):
+        """Return list of empty Squares adjacent to one already filled. (If board is empty, return center Square.)"""
+        if turn_num == 1:
+            return [Square(int(layout.width / 2), int(layout.height / 2))]
+
+        filled = set([s for s in self.filled_squares()])
+        if not filled:  # If first player passed, for some reason
+            return [Square(int(layout.width / 2), int(layout.height / 2))]
+
+        hooks = []
+        for s in self.squares():
+            if board[s.y][s.x] is None:
+                for adj in self.squares_adjacent(s):
+                    if adj in s:
+                        hooks.append(adj)
+        return hooks
+
+    def move2points(self, move:Move):
+        square2pl = {Square(pl.x, pl.y): pl for pl in move.placed_letters}
+        points = self.points_word(square2pl, move.primary_word)
+        for secondary_word in move.secondary_words:
+            points += self.word2points(square2pl, move.secondary_word)
+        return points
 
     def print(self):
         for row in self.letters:
             for c in row:
                 print(c, end='')
             print()
+
+    def squares(self):
+        for y in range(self.layout.height):
+            for x in range(self.layout.width):
+                yield Square(x, y)
+
+    def squares_adjacent(self, square):
+        for x in range(min(0, square.x - 1), max(self.layout.width - 1, square.x + 1) + 1):
+            for y in range(min(0, square.y - 1), max(self.layout.height - 1, square.y + 1) + 1):
+                yield Square(x, y)
+
+    def squares_filled(self):
+        for s in self.squares():
+            if board[s.y][s.x] is not None:
+                yield Square(s.x, s.y)
+
+    def word2points(self, square2pl:Dict[Square, PlacedLetter], pw:PlacedWord):
+        points = 0
+        word_multiplier = 1
+        for sq in pw.squares():
+            if sq in square2pl:
+                pl = square2pl[sq]
+                if pl.char.islower():
+                    bst = self.layout[sq.y][sq.x]
+                    letter_multipler = 1
+                    if bst == BoardSquareType.DOUBLE_LETTER:
+                        letter_multipler = 2
+                    elif bst == BoardSquareType.TRIPLE_LETTER:
+                        letter_multipler = 3
+                    elif bst == BoardSquareType.DOUBLE_WORD:
+                        word_multipler *= 2
+                    elif bst == BoardSquareType.TRIPLE_WORD:
+                        word_multipler *= 3
+                points += self.game.char2points[pl.char] * letter_multiplier
+        points *= word_multipler
+        return points
 
 
 class BoardLayout:
@@ -56,8 +114,11 @@ class BoardLayout:
                     , 'T': BoardSquareType.TRIPLE_WORD }
     bstype2char = Util.reversed_dict(char2bstype)
     def __init__(self, rows):
-        self.layout_rows = [[BoardLayout.char2bstype[c] for c in row] for row in rows]
+        # TODO: Assert that layout is a rectangle
+        self.layout = [[BoardLayout.char2bstype[c] for c in row] for row in rows]
+        self.height = len(self.layout)
+        self.width = len(self.layout[0])
 
     def print(self):
-        for row in self.layout_rows:
+        for row in self.layout:
             print('.'.join([BoardLayout.bstype2char[c] for c in row]))
