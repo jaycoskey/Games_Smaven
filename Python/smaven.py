@@ -18,7 +18,7 @@ class Command:
     SEARCH = 'search'
     EXPERIMENT = 'experiment'
     PLAYERS = 'players'
-    AI = 'ai'
+    ML = 'ml'
 
 
 def main(config, args):
@@ -55,42 +55,60 @@ def main(config, args):
         print('Warning: Search feature not yet implemented')
 
     elif args.command == Command.EXPERIMENT:
-        # TODO: experiment ==> Init Board (BoardLayout, Board, Bag); start interactive shell (search/load/replay/etc.)
+        # TODO: Init Board (BoardLayout, Bag)
+        # TODO: start interactive shell (search/load/replay/etc.)
         raise NotImplementedError('Experiment feature not yet implemented')
+
     elif args.command == Command.PLAYERS:
-        # TODO: players ==> Init Game (Players, BoardLayout, Board, Bag); play_game(...)
+        char2count = {}
+        for count in config.letter_counts_scrabble_en:
+            for char in config.letter_counts_scrabble_en[count]:
+                char2count[char] = count
+
+        # TODO: Init Game (Players, BoardLayout, Board, Bag); play_game(...)
         char2points = {}
         for pts in config.letter_points_scrabble_en:  # TODO: Allow choice of point mapping 
             for char in config.letter_points_scrabble_en[pts]:
                 char2points[char] = pts
         # TODO: ...
         raise NotImplementedError('Players specification not yet implemented')
-    elif args.command == Command.AI:  # Train computer strategy using reinforcement learning
-        # TODO: ai ==> Init Game (Players w/ strategy, BoardLayout, Board, Bag); play_game(...)
-        raise NotImplementedError('AI feature not yet implemented')
+
+    elif args.command == Command.ML:  # Train computer strategy via ML
+        # TODO: bag = ...
+        # TODO: layout = ...
+        # TODO: board = ...
+        # TODO: <computer_players> = ...
+        # TODO: game = Game(Players w/ strategy, BoardLayout, Board, Bag)
+        # TODO: game.play_game()
+        raise NotImplementedError('ML (machine learning) feature not yet implemented')
+
     else:
         raise ValueError(f'Feature not specified')
 
 
 if __name__ == '__main__':
     # Argument summary:
-    # a:ai         b:board   c:config  d:dictionary e:experiment
-    # f:           g:gui     h:        i:           j:
-    # k:           l:layout  m:        n:           o:logfile?
-    # p:players    q:        r:rack    s:skill_lvl? t:text
-    # u:           v:verbose w:        x:           y:
+    # a:               b:board   c:config           d:dictionary    e:experiment
+    # f:fast?          g:gui     h:help             i:input/import? j:
+    # k:(config-)keys? l:layout  m:machine_learning n:              o:logfile?
+    # p:players        q:        r:rack             s:skill_lvl?    t:text
+    # u:undo-enabled?  v:verbose w:weightfile (ml)? x:              y:
     # z:
     #
     prog_description = 'Toolbox for word square games, such as Scrabble and Words With Friends'
     parser = argparse.ArgumentParser(prog=sys.argv[0], description=prog_description)
 
-    parser.add_argument('-c', '--configfile', help='File that contains game configuration', default='config.yml')
-    parser.add_argument('-l', '--layoutfile', help='File that contains the layout of the board', default='@layout_scrabble')
+    parser.add_argument('-c', '--configfile'
+            , help='File that contains game configuration', default='config.yml')
+    parser.add_argument('-l', '--layoutfile'
+            , help='File that contains the layout of the board', default='@layout_scrabble')
     parser.add_argument('-v', '--verbose', action='store_true')
 
     display_mode_group = parser.add_mutually_exclusive_group(required=False)
-    display_mode_group.add_argument('-t', '--text', nargs='?', dest='display_mode', const='text')
-    display_mode_group.add_argument('-g', '--gui', nargs='?', dest='display_mode', const='gui')
+    display_mode_group.add_argument('-t', '--text'
+            , nargs='?', dest='display_mode', const='text')
+    display_mode_group.add_argument('-g', '--gui'
+            , nargs='?', dest='display_mode', const='gui')
     parser.set_defaults(display_mode='text')
 
     subparsers = parser.add_subparsers(title='commands', dest='command')
@@ -99,7 +117,7 @@ if __name__ == '__main__':
     parser_search = subparsers.add_parser(Command.SEARCH, help='Find valid moves for a given board, rack, and dictionary')
     parser_experiment = subparsers.add_parser(Command.EXPERIMENT, help='Use a shell to experiment')
     parser_players = subparsers.add_parser(Command.PLAYERS, help='Play a game: Human vs Human, or Computer vs Human')
-    parser_ai = subparsers.add_parser(Command.AI, help='Develop a strategy by playing Computer vs Computer')
+    parser_ml = subparsers.add_parser(Command.ML, help='Develop a strategy by playing Computer vs Computer')
 
     # Search args
     parser_search.add_argument('-b', '--boardfile', help='File that contains letters present on board', default='@board_scrabble_test1')
