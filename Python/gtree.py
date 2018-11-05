@@ -2,18 +2,14 @@
 
 from board import Board, BoardDirection
 from move import Move, PlacedLetter, PlacedWord
-from typing import List
+from typing import Iterable, List
 from util import Square
 
 
 # A node in a GADDAG. (See the Wikipedia page for GADDAG.)
 # TODO: Support serialization & deserialization.
 class GNode:
-    # CHAR_BOW marks the beginning of a word in a Trie (e.g., can happen when the hook is the end of a word)
-    # Note: The path traversed from the root to a GNode with CHAR_BOW spells out the beginning of the word in reverse.
-    CHAR_BOW = '^'
-
-    # CHAR_EOW marks the end of a word. Note that other words might continue down the trie (e.g., win & winsome).
+    # CHAR_EOW marks the end of a word, though other words might continue on (e.g. win/winsome).
     CHAR_EOW = '$'
 
     # CHAR_REV marks the end of the reversed portion of word traveral. (See the GADDAG Wikipedia page.)
@@ -24,20 +20,22 @@ class GNode:
 
     def __init__(self, char:str):
         self.char = char
-        self.children = {}
+        self.children:Dict[str, GNode] = {}
 
     def add_child(char:str)->'GNode':
         child = GNode(char)
         self.children[char] = child
         return child
 
-    def add_word(self, word):
-        """TODO: Add addition of word at all hooks"""
-        if word == '':
+    def add_string(self, s):
+        """Add a string to the subtree based at this GNode. Can contain content characters and CHAR_REV."""
+        if s == '':
+            # Reached the end of the string. Add the EOW char.
             child = self.add_child(GNode.CHAR_EOW)
         else:
-            child = self.add_child(word[0])
-            child.add_word(word[1:])
+            # Add the next char, and continue recursively.
+            child = self.add_child(s[0])
+            child.add_word(s[1:])
 
     def find_words(self, move_acc:Move, board:Board, bdir:BoardDirection, cursor:Square, rack:str):
         """Recursively call down the Trie while searching for words that meet dictionary, rack, and board constraints.
@@ -45,7 +43,7 @@ class GNode:
         Forming the primary word (see below) usually takes multiple recursive calls, in two phases:
             - Phase 1: The cursor is moving from the original hook backward (LEFT/UP).
             - Phase 2: The cursor is moving from the original hook forward (RIGHT/DOWN).
-        Phase 1 can "fork" a Phase 2 when a CHAR_REV is reached and the search reaches: (a) the board edge, or (b) an empty square
+        Phase 1 can "fork" a Phase 2 when a CHAR_BOW is reached and the search reaches: (a) the board edge, or (b) an empty square
         Phase 2 can yield results when an CHAR_EOW is reached and the search reaches: (a) the board edge, or (b) an empty square
 
         :param GNode self: This GNode
@@ -60,7 +58,7 @@ class GNode:
             * secondary_words: List[PlacedWord]   # The secondary words formed, perpendicular to the primary word.
                 All words returned meet dictionary, board, & rack constraints.
                 Note: This function does not return the Move's score.
-        :rtype: Move
+        :rtype: Iterable[Move]
         """
         # TODO: When to re-use args vs when to clone? If only one recursive call is made from this one,
         #       or if multiple calls are made in series, then we don't need to make copies of the arguments.
@@ -96,23 +94,24 @@ class GTree:
         self.root = GNode(GNode.CHAR_ROOT)
 
     def add_word(self, word:str):
-        self.root.add_word(word)
+        """Add the word once for each hook: first hook->beginning, then hook->end"""
+        for hook_pos in range(len(word)):
+            for k in range(hook_pos, -1, -1):
+                front = reversed(word[0:k])
+                back = word[k:len(word)]
+                self.root.add_string(front + CHAR_REV + back)
+        self.root.add_string(reversed(word))
 
     def add_wordlist(self, filename: str):
         def is_line_valid(s):
             return all([ord('a') < ord(c) < ord('z') for c in s])
 
-            with open(filename, 'r') as f:
-                for line in f.readlines():
-                    line = line.strip()
-                    if is_line_valid(line):
-                        word = line
-                        self.add_word(word)
-
-    def has_word(self, word)->bool:
-        """Check to see if the given word is in the GTree.
-        This is used to check whether secondary words created by a Move are valid."""
-        pass
+        with open(filename, 'r') as f:
+            for line in f.readlines():
+                line = line.strip()
+                if is_line_valid(line):
+                    word = line
+                    self.add_word(word)
 
     # How much are we duplicating work across hooks? Any way to reduce effort?
     def find_words(self, board: Board, rack: str)->List[PlacedWord]:
@@ -126,3 +125,14 @@ class GTree:
                 for word in found_words:
                     words.add(word)
         return words
+
+    def has_word(self, word)->bool:
+        """Check to see if the given word is in the GTree.
+        Useful to check whether secondary words created by a Move are valid."""
+        cursor = self.root
+        for c in word:
+            if c in cursor.children:
+                cursor = cursor[c]
+            else:
+                return False
+        return GNode.CHAR_EOW in cursor.children
