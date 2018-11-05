@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from enum import Enum, auto
+import logging
 
 
 class Bag:
@@ -31,7 +32,7 @@ class Game:
         self.cur_player_id = player_order[0]
         self.game_state = GameState.NOT_STARTED
         self.history:List[Turn] = []
-        self.log_file = None  # TODO
+        self.logger = logging.getLogger(__name__)
         self.log_filename = log_filename
         self.winner = None  # Remove? 
 
