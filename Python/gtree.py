@@ -46,6 +46,7 @@ class GNode:
             child = self.add_child(s[0])
             child.add_word(s[1:])
 
+    # TODO: Eliminate duplication? Words spanning from one hook to another are found twice---once from each direction.
     def find_words(self, move_acc:Move, board:Board, cursor:Square, bdir:BoardDirection, rack:str):
         """Recursively call down the Trie while searching for words that meet dictionary, rack, and board constraints.
         Each call involves branching logic made at a single GNode.
@@ -58,10 +59,10 @@ class GNode:
         :param GNode self: This GNode
         :param Move move_acc: The Move being formed while searching for all valid moves
         :param Board board: The Board being used
-        :param BoardDirection bdir: The BoardDirection being used
         :param Square cursor: The board square (cursor) currently being considered.
+        :param BoardDirection bdir: The BoardDirection being used
         :param str rack: The (remaining) letters available for the player to use
-        :return: move_acc, which has three attributes:
+        :return: Iterable(move_acc), which has three attributes:
             * played_letters: List[PlacedLetter]  # The letters placed on the board
             * primary_word: PlacedWord            # The word formed by letters played & adjacent collinear letters on the board.
             * secondary_words: List[PlacedWord]   # The secondary words formed, perpendicular to the primary word.
@@ -82,6 +83,7 @@ class GNode:
                     rev_bdir = BoardDirection.reversed(bdir)
                     next_cursor = Util.add_sq_bdir(move_acc.primary_word.square_end, rev_bdir)
                     pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
+
                     yield from child_gnode.find_words(  # TODO
                             move_acc
                             , board
@@ -145,6 +147,7 @@ class GNode:
                         post_call_hash = hash((move_acc, board, cursor, bdir, rack))
                         assert(pre_call_hash == post_call_hash)
 
+
 # GTree is an implementation of a GADDAG: a type of Trie specialized for looking up words from a mid-word "hook".
 # For more info, see https://en.wikipedia.org/wiki/GADDAG
 class GTree:
@@ -179,7 +182,7 @@ class GTree:
         words = set()
         hooks = board.get_hooks()
         for hook in hooks:
-            for brddir in [BoardDirection.LEFT, BoardDirection.UP]:
+            for bdir in [BoardDirection.LEFT, BoardDirection.UP]:
                 # Find words from this hook; move to beginning on word in this board direction
                 # TODO: move_acc = ...
                 found_words = self.root.find_words(move_acc, board, hook, bdir, rack)

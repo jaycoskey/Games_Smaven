@@ -72,8 +72,10 @@ It might be expanded to allow human vs computer competition, or even use machine
 * DONE (2018-11-03): Compute points of moves 
 
 ### Search tests
+* TODO: Empty board test. Rack:abcd. Dictionary:['bad', 'cab']. Expected: Each of 2 words in 2 directions & 3 positions.
 * TODO: Search test (fill contiguous): Board:"aa.....k", Rack:adrrvyz. Find aardvark
 * TODO: Search test (fill contiguous with blank): Board:"aa.....k", Rack:rd_aryz. Find aardvark
+* TODO: Search test (cannot fill contiguous with blank): Board:"baa.....k", Rack:rd_aryz. Does not find aardvark
 * TODO: Any search test that finds words should find at least those words when a letter tile is replaced by a blank.
 * TODO: Search test (noncontiguous): Board:ear.hen.are, Rack:xtywz. Find "earthenware"
 * TODO: Search test (board edge): Board:"^liqui", Rack:'dateion'. Find liquid, liquidate, liquidation
