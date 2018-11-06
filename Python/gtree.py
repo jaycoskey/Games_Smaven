@@ -9,6 +9,8 @@ from util import Square
 # A node in a GADDAG. (See the Wikipedia page for GADDAG.)
 # TODO: Support serialization & deserialization.
 class GNode:
+    CHAR_BLANK = ' '
+
     # CHAR_EOW marks the end of a word, though other words might continue on (e.g. win/winsome).
     CHAR_EOW = '$'
 
@@ -21,6 +23,13 @@ class GNode:
     def __init__(self, char:str):
         self.char = char
         self.children:Dict[str, GNode] = {}
+
+    def __str__(self, indent_level=0, label=''):
+        indent_str = '  '
+        result = (
+            f'{indent_str * indent_level}{label}{self.data}\n'
+            + '\n'.join([c.__str__(indent_level + 1, label=c.char) for c in self.children])
+            )
 
     def add_child(char:str)->'GNode':
         child = GNode(char)
@@ -37,7 +46,7 @@ class GNode:
             child = self.add_child(s[0])
             child.add_word(s[1:])
 
-    def find_words(self, move_acc:Move, board:Board, bdir:BoardDirection, cursor:Square, rack:str):
+    def find_words(self, move_acc:Move, board:Board, cursor:Square, bdir:BoardDirection, rack:str):
         """Recursively call down the Trie while searching for words that meet dictionary, rack, and board constraints.
         Each call involves branching logic made at a single GNode.
         Forming the primary word (see below) usually takes multiple recursive calls, in two phases:
@@ -60,38 +69,90 @@ class GNode:
                 Note: This function does not return the Move's score.
         :rtype: Iterable[Move]
         """
-        # TODO: When to re-use args vs when to clone? If only one recursive call is made from this one,
-        #       or if multiple calls are made in series, then we don't need to make copies of the arguments.
-        #
         for child_gnode in self.children:  # Dictionary constraint
-            if self.char == GNode.CHAR_BOW:  #  TODO: ... and (Util.add_sq_bdir(cursor, bdir) is not another letter on the board):
-                yield move_acc
-            if self.char == GNode.CHAR_REV:  # TODO: ... and (Util.add_sq_bdir(cursor, bdir) is not another letter on the board):
-                bdir = BoardDirection.reversed(bdir)
-                # TODO: ... send off probe in new direction ...
-            if self.char == GNode.CHAR_EOW:  # TODO: ... and (Util.add_sq_bdir(cursor, bdir) is not another letter on the board):
-                pass # TODO ...
-            if child_gnode.char in rack:  # TODO: ... or on board:  # Rack/Board constraint
-                move_acc.placed_letters_acc = None  # TODO ...
-                move_acc.primary_word_acc = None  # TODO ...
-                move_acc.secondary_words_acc = None  # TODO ...
-                # board does not need to be updated
-                # bdir is not updated here
-                next_cursor = Util.add_sq_bdir(hook, bdir)
-                rack = None  # TODO...
-
-                next_bdir = BoardDirection.reverse(bdir) if cur_char == GNode.CHAR_REV else bdir
-
-                next_rack = rack  # TODO ... with current character removed
-                # Note: No need to update board
-                yield from child_gnode.find_words(move_acc, board, bdir, next_cursor, next_rack)
-
+            next_cursor = Util.add_sq_bdir(move_acc.primary_word.square_end, bdir)
+            if self.char == GNode.CHAR_EOW:
+                if (not board.is_square_on_board(next_cursor)) or (board[next_cursor] == Board.CHAR_EMPTY):
+                    pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
+                    yield move_acc  # TODO
+                    post_call_hash = hash((move_acc, board, cursor, bdir, rack))
+                    assert(pre_call_hash == post_call_hash)
+            elif self.char == GNode.CHAR_REV:
+                if (not board.is_square_on_board(next_cursor)) or (board[next_cursor] == Board.CHAR_EMPTY):
+                    rev_bdir = BoardDirection.reversed(bdir)
+                    next_cursor = Util.add_sq_bdir(move_acc.primary_word.square_end, rev_bdir)
+                    pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
+                    yield from child_gnode.find_words(  # TODO
+                            move_acc
+                            , board
+                            , next_cursor
+                            , rev_bdir
+                            , Util.removed_char_from_rack(rack, child_gnode.char)
+                            )
+                    post_call_hash = hash((move_acc, board, cursor, bdir, rack))
+                    assert(pre_call_hash == post_call_hash)
+            else:  # self.char is alphabetic
+                is_char_on_board = board[cursor] == child_gnode.char
+                if is_char_on_board:
+                    next_primary_word = move_acc.primary_word.updated(cursor, bdir, child_gnode.char)
+                    new_secondary_words = board.get_secondary_words(cursor, bdir, child_gnode.char)
+                    pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
+                    yield from child_gnode.find_words(  # TODO
+                            Move(move_acc.placed_letters
+                                , next_primary_word
+                                , move_acc.secondary_words + new_secondary_words
+                                )
+                            , board
+                            , Util.add_sq_bdir(cursor, bdir)
+                            , bdir
+                            , rack
+                            )
+                    post_call_hash = hash((move_acc, board, cursor, bdir, rack))
+                    assert(pre_call_hash == post_call_hash)
+                else:
+                    is_char_in_rack = child_gnode.char in rack
+                    if is_char_in_rack:
+                        next_primary_word = move_acc.primary_word.updated(cursor, bdir, child_gnode.char)
+                        new_secondary_words = board.get_secondary_words(cursor, bdir, child_gnode.char)
+                        pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
+                        yield from child_gnode.find_words(  # TODO
+                                Move(move_acc.placed_letters + [PlacedLetter(cursor, child_gnode.char)]
+                                    , next_primary_word
+                                    , move_acc.secondary_words + new_secondary_words
+                                    )
+                                , board
+                                , Util.add_sq_bdir(cursor, bdir)
+                                , bdir
+                                , Util.removed_char(rack, child_gnode.char)
+                                )
+                        post_call_hash = hash((move_acc, board, cursor, bdir, rack))
+                        assert(pre_call_hash == post_call_hash)
+                    is_blank_in_rack = GNode.CHAR_BLANK in rack
+                    if is_blank_in_rack:
+                        next_primary_word = move_acc.primary_word.updated(cursor, bdir, child_gnode.char)
+                        new_secondary_words = board.get_secondary_words(cursor, bdir, child_gnode.char)
+                        pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
+                        yield from child_gnode.find_words(  # TODO
+                                Move(move_acc.placed_letters + [PlacedLetter(cursor, child_gnode.char)]
+                                    , next_primary_word
+                                    , move_acc.secondary_words + new_secondary_words
+                                    )
+                                , board
+                                , Util.add_sq_bdir(cursor, bdir)
+                                , bdir
+                                , Util.removed_char(rack, child_gnode.char)
+                                )
+                        post_call_hash = hash((move_acc, board, cursor, bdir, rack))
+                        assert(pre_call_hash == post_call_hash)
 
 # GTree is an implementation of a GADDAG: a type of Trie specialized for looking up words from a mid-word "hook".
 # For more info, see https://en.wikipedia.org/wiki/GADDAG
 class GTree:
     def __init__(self):
         self.root = GNode(GNode.CHAR_ROOT)
+
+    def __str__(self, indent_level=0, label=''):
+        return self.root.__str__(indent_level=0, label='')
 
     def add_word(self, word:str):
         """Add the word once for each hook: first hook->beginning, then hook->end"""
@@ -121,7 +182,7 @@ class GTree:
             for brddir in [BoardDirection.LEFT, BoardDirection.UP]:
                 # Find words from this hook; move to beginning on word in this board direction
                 # TODO: move_acc = ...
-                found_words = self.root.find_words(move_acc, board, bdir, hook, rack)
+                found_words = self.root.find_words(move_acc, board, hook, bdir, rack)
                 for word in found_words:
                     words.add(word)
         return words

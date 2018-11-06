@@ -14,13 +14,17 @@ class BoardDirection(Enum):
     DOWN = (0, -1)
 
     @staticmethod
-    def reversed(brddir):
-        if brddir == BoardDirection.LEFT: return BoardDirection.RIGHT
-        elif brddir == BoardDirection.UP: return BoardDirection.DOWN
+    def is_forward(bdir):
+        return bdir in [BoardDirection.RIGHT, BoardDirection.DOWN]
+
+    @staticmethod
+    def reversed(bdir):
+        if bdir == BoardDirection.LEFT: return BoardDirection.RIGHT
+        elif bdir == BoardDirection.UP: return BoardDirection.DOWN
 
         # The following aren't needed unless words can be played right->left or down->up.
-        elif brddir == BoardDirection.RIGHT: return BoardDirection.LEFT
-        elif brddir == BoardDirection.DOWN: return BoardDirection.UP
+        elif bdir == BoardDirection.RIGHT: return BoardDirection.LEFT
+        elif bdir == BoardDirection.DOWN: return BoardDirection.UP
 
 
 class BoardSquareType(Enum):
@@ -33,9 +37,20 @@ class BoardSquareType(Enum):
 
 
 class Board:
+    CHAR_EMPTY = '.'
+
     def __init__(self, layout:'BoardLayout', rows:List[str]=None):
+        def config2obj(c):
+            return Board.CHAR_EMPTY if c == '.' else c
+
         self.layout: BoardLayout = layout
-        self.letters: List[List[str]] = [[c for c in row] for row in rows]
+        self.letters: List[List[str]] = [[config2obj(c) for c in row] for row in rows]
+
+    def __getitem__(self, square):
+        return self.letters[square.y][square.x]
+
+    def get_secondary_words(self, cursor, bdir, char):
+        pass  # TODO
 
     # TODO: More efficient general solution? Set intersection? More efficient special cases (e.g., sparse board)?
     def hooks(self, turn_num):
@@ -54,6 +69,9 @@ class Board:
                     if adj in s:
                         hooks.append(adj)
         return hooks
+
+    def is_square_on_board(self, s):
+        return (0 <= s.x < self.width) and (0 <= s.y < self.height)
 
     def move2points(self, move:Move):
         square2pl = {Square(pl.x, pl.y): pl for pl in move.placed_letters}

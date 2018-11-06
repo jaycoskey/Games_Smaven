@@ -10,6 +10,12 @@ class Move:
         self.primary_word = primary_word
         self.secondary_words = secondary_words if secondary_words else []
 
+    def updated(self, new_placed_letters, bdir, new_char, new_secondary_words):
+        return Move(self.placed_letters.extend(new_placed_letters)
+                , Util.update_with_char(self.primary_word, bdir, new_char)
+                , self.secondary_words.extend(new_secondary_words)
+                )
+
 
 # Note: For now, use uppercase to represent the character used for blank tiles & lowercase for others.
 class PlacedLetter:
@@ -24,16 +30,31 @@ class PlacedWord:
         self.square_end = square_end
         self.word = word
 
-    def squares(pw: 'PlacedWord'):
-        if pw.square_begin == pw.square_end:
-            return [pw.square_begin]
-        elif pw.square_begin.x < ps.square_end.x:
-            assert(pw.square_begin.y == pw.square_end.y)
-            y = pw.square_begin.y
-            return [Square(x, y) for x in range(pw.square_begin.x, pw.square_end.x + 1)]
-        elif pw.square_begin.y < ps.square_end.y:
-            assert(pw.square_begin.x == pw.square_end.x)
-            x = pw.square_begin.x
-            return [Square(x, y) for y in range(pw.square_begin.y, pw.square_end.y + 1)]
+    def squares(self):
+        if self.square_begin == self.square_end:
+            return [self.square_begin]
+        elif self.square_begin.x < self.square_end.x:
+            assert(self.square_begin.y == self.square_end.y)
+            y = self.square_begin.y
+            return [Square(x, y) for x in range(self.square_begin.x, self.square_end.x + 1)]
+        elif self.square_begin.y < self.square_end.y:
+            assert(self.square_begin.x == self.square_end.x)
+            x = self.square_begin.x
+            return [Square(x, y) for y in range(self.square_begin.y, self.square_end.y + 1)]
         else:
             ValueError('Internal error in Board.points_word')
+
+    def updated(self, cursor, bdir, char):
+        next_square_begin = (
+                self.square_begin if BoardDirection.is_forward(bdir)
+                else Util.add_sq_bdir(self.square_begin, bdir)
+                )
+        next_square_end = (
+                self.square_end if not BoardDirection.is_forward(bdir)
+                else Util.add_sq_bdir(self.square_end, bdir)
+                )
+        next_word = (
+                Util.append_char(self.word, child_gnode.char) if BoardDirection.is_forward(bdir)
+                else Util.prepend_char(self.word, child_gnode.char)
+                )
+        return PlacedWord(next_square_begin, next_square_end, next_word)

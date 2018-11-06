@@ -5,6 +5,8 @@ import logging
 
 
 class Bag:
+    CHAR_BLANK = ' '
+
     # TODO: self.letters: str
     pass
 

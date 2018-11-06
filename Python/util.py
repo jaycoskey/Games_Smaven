@@ -32,5 +32,18 @@ class Util:
             return [line.strip() for line in f.readlines()]
 
     @staticmethod
+    def removed_char(rack, c):
+        index = rack.find(c)
+        return rack[0: index] + rack[index: len(rack)]
+
+    @staticmethod
     def reversed_dict(d):
         return { d[k]: k for k in d }
+
+    @staticmethod
+    def prepend_char(s, c):
+        return c + s
+
+    @staticmethod
+    def append_char(s, c):
+        return s + c
