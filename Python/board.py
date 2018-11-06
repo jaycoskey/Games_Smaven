@@ -49,8 +49,27 @@ class Board:
     def __getitem__(self, square):
         return self.letters[square.y][square.x]
 
-    def get_secondary_words(self, cursor, bdir, char):
-        pass  # TODO
+    def get_secondary_word(self, gtree, cursor, char, bdir):
+        if bdir in [BoardDirection.LEFT, BoardDirection.RIGHT]:
+            back = BoardDirection.UP
+        else:
+            back = BoardDirection.LEFT
+        forward = BoardDirection.reverse(back)
+
+        begin = cursor
+        end = cursor
+        word = char
+
+        while True:
+            next_begin = Util.add_sq_bdir(begin, back)
+            if self.has_character(next_begin):
+                begin = next_begin
+        while True:
+            next_end = Util.add_sq_bdir(end, forward)
+            if self.has_character(next_end):
+                end = next_end
+        if gtree.has_word(word):
+            return PlacedWord(begin, end, word)
 
     # TODO: More efficient general solution? Set intersection? More efficient special cases (e.g., sparse board)?
     def hooks(self, turn_num):
@@ -136,8 +155,9 @@ class BoardLayout:
                     , 'T': BoardSquareType.TRIPLE_WORD }
     bstype2char = Util.reversed_dict(char2bstype)
     def __init__(self, rows):
-        # TODO: Assert that layout is a rectangle
         self.layout = [[BoardLayout.char2bstype[c] for c in row] for row in rows]
+        is_rectangle = all([len(row) == len(self.layout[0]) for row in self.layout])
+        assert(is_rectangle)
         self.height = len(self.layout)
         self.width = len(self.layout[0])
 
