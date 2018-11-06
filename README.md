@@ -104,3 +104,7 @@ It might be expanded to allow human vs computer competition, or even use machine
   * Distances (perpendicular, parallel) to closest triple letter square for opponent's next move
   * Distances (perpendicular, parallel) to closest double letter square for opponent's next move
   * Etc.
+
+## References
+
+* A Scrabble Artificial Intelligence Game, by Priyatha Joji Abraham, San Jose State University, Fall 2017.
