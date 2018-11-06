@@ -106,6 +106,7 @@ class Board:
         word_multiplier = 1
         for sq in pw.squares():
             if sq in square2pl:
+                # Letter is being placed on board
                 pl = square2pl[sq]
                 if pl.char.islower():
                     bst = self.layout[sq.y][sq.x]
@@ -119,6 +120,9 @@ class Board:
                     elif bst == BoardSquareType.TRIPLE_WORD:
                         word_multipler *= 3
                 points += self.game.char2points[pl.char] * letter_multiplier
+            elif pl.char.islower():
+                # Letter is already on board
+                points += self.game.char2points[self[sq]]
         points *= word_multipler
         return points
 
