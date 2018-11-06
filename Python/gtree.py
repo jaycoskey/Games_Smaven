@@ -9,6 +9,7 @@ from util import Square
 # A node in a GADDAG. (See the Wikipedia page for GADDAG.)
 # TODO: Support serialization & deserialization.
 class GNode:
+    VERBOSE = False
     CHAR_BLANK = ' '
 
     # CHAR_EOW marks the end of a word, though other words might continue on (e.g. win/winsome).
@@ -24,14 +25,18 @@ class GNode:
         self.char = char
         self.children:Dict[str, GNode] = {}
 
-    def __str__(self, indent_level=0, label=''):
+    def __len__(self):
+        return 1 + sum([len(c) for c in self.children])
+
+    def __str__(self, indent_level=0):
         indent_str = '  '
         result = (
-            f'{indent_str * indent_level}{label}{self.data}\n'
-            + '\n'.join([c.__str__(indent_level + 1, label=c.char) for c in self.children])
+            f'{indent_str * indent_level}{self.char}\n'
+            + '\n'.join([self.children[c].__str__(indent_level + 1) for c in self.children])
             )
+        return result
 
-    def add_child(char:str)->'GNode':
+    def add_child(self, char:str)->'GNode':
         child = GNode(char)
         self.children[char] = child
         return child
@@ -41,12 +46,14 @@ class GNode:
         if s == '':
             # Reached the end of the string. Add the EOW char.
             child = self.add_child(GNode.CHAR_EOW)
+        elif s[0] in self.children:
+            child = self.children[s[0]]
+            child.add_string(s[1:])
         else:
             # Add the next char, and continue recursively.
             child = self.add_child(s[0])
-            child.add_word(s[1:])
+            child.add_string(s[1:])
 
-    # TODO: Eliminate duplication? Words spanning from one hook to another are found twice---once from each direction.
     def find_words(self, move_acc:Move, board:Board, cursor:Square, bdir:BoardDirection, rack:str):
         """Recursively call down the Trie while searching for words that meet dictionary, rack, and board constraints.
         Each call involves branching logic made at a single GNode.
@@ -97,12 +104,16 @@ class GNode:
                 is_char_on_board = board[cursor] == child_gnode.char
                 if is_char_on_board:
                     next_primary_word = move_acc.primary_word.updated(cursor, bdir, child_gnode.char)
-                    new_secondary_words = board.get_secondary_words(cursor, bdir, child_gnode.char)
+                    secondary_word = board.get_secondary_word(cursor, bdir, child_gnode.char)
+                    secondary_words = (move_acc.secondary_words + [secondary_word]
+                                            if secondary_word
+                                            else move_acc.secondary_words
+                                            )
                     pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
                     yield from child_gnode.find_words(  # TODO
                             Move(move_acc.placed_letters
                                 , next_primary_word
-                                , move_acc.secondary_words + new_secondary_words
+                                , secondary_words
                                 )
                             , board
                             , Util.add_sq_bdir(cursor, bdir)
@@ -115,12 +126,16 @@ class GNode:
                     is_char_in_rack = child_gnode.char in rack
                     if is_char_in_rack:
                         next_primary_word = move_acc.primary_word.updated(cursor, bdir, child_gnode.char)
-                        new_secondary_words = board.get_secondary_words(cursor, bdir, child_gnode.char)
+                        secondary_word = board.get_secondary_words(cursor, bdir, child_gnode.char)
+                        secondary_words = (move_acc.secondary_words + [secondary_word]
+                                                if secondary_word
+                                                else move_acc.secondary_words
+                                                )
                         pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
                         yield from child_gnode.find_words(  # TODO
                                 Move(move_acc.placed_letters + [PlacedLetter(cursor, child_gnode.char)]
                                     , next_primary_word
-                                    , move_acc.secondary_words + new_secondary_words
+                                    , secondary_words
                                     )
                                 , board
                                 , Util.add_sq_bdir(cursor, bdir)
@@ -132,12 +147,16 @@ class GNode:
                     is_blank_in_rack = GNode.CHAR_BLANK in rack
                     if is_blank_in_rack:
                         next_primary_word = move_acc.primary_word.updated(cursor, bdir, child_gnode.char)
-                        new_secondary_words = board.get_secondary_words(cursor, bdir, child_gnode.char)
+                        secondary_word = board.get_secondary_words(cursor, bdir, child_gnode.char)
+                        secondary_words = (move_acc.secondary_words + [secondary_word]
+                                            if secondary_word
+                                            else move_acc.secondary_words
+                                            )
                         pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
                         yield from child_gnode.find_words(  # TODO
                                 Move(move_acc.placed_letters + [PlacedLetter(cursor, child_gnode.char)]
                                     , next_primary_word
-                                    , move_acc.secondary_words + new_secondary_words
+                                    , secondary_words
                                     )
                                 , board
                                 , Util.add_sq_bdir(cursor, bdir)
@@ -151,22 +170,29 @@ class GNode:
 # GTree is an implementation of a GADDAG: a type of Trie specialized for looking up words from a mid-word "hook".
 # For more info, see https://en.wikipedia.org/wiki/GADDAG
 class GTree:
+    VERBOSE = False
+
     def __init__(self):
         self.root = GNode(GNode.CHAR_ROOT)
 
-    def __str__(self, indent_level=0, label=''):
-        return self.root.__str__(indent_level=0, label='')
+    def __len__(self):
+        return len(self.root)
+
+    def __str__(self, indent_level=0):
+        return self.root.__str__(indent_level=0)
 
     def add_word(self, word:str):
         """Add the word once for each hook: first hook->beginning, then hook->end"""
-        for hook_pos in range(len(word)):
-            for k in range(hook_pos, -1, -1):
-                front = reversed(word[0:k])
-                back = word[k:len(word)]
-                self.root.add_string(front + CHAR_REV + back)
-        self.root.add_string(reversed(word))
+        for hook_pos in range(1, len(word)):
+            k = hook_pos
+            front = ''.join(reversed(word[0:k]))
+            back = ''.join(word[k:len(word)])
+            string_loop = front + GNode.CHAR_REV + back
+            self.root.add_string(string_loop)
+        string_end = str(''.join(reversed(word)))
+        self.root.add_string(string_end)
 
-    def add_wordlist(self, filename: str):
+    def add_wordfile(self, filename: str):
         def is_line_valid(s):
             return all([ord('a') < ord(c) < ord('z') for c in s])
 
@@ -176,6 +202,10 @@ class GTree:
                 if is_line_valid(line):
                     word = line
                     self.add_word(word)
+
+    def add_wordlist(self, words:List[str]):
+        for word in words:
+            self.add_word(word)
 
     # How much are we duplicating work across hooks? Any way to reduce effort?
     def find_words(self, board: Board, rack: str)->List[PlacedWord]:
@@ -193,10 +223,14 @@ class GTree:
     def has_word(self, word)->bool:
         """Check to see if the given word is in the GTree.
         Useful to check whether secondary words created by a Move are valid."""
+        if len(word) == 1:
+            chars = word + GNode.CHAR_EOW
+        else:
+            chars = word[0] + GNode.CHAR_REV + word[1:] + GNode.CHAR_EOW
         cursor = self.root
-        for c in word:
-            if c in cursor.children:
-                cursor = cursor[c]
-            else:
+        for c in chars:
+            if c not in cursor.children:
                 return False
-        return GNode.CHAR_EOW in cursor.children
+            else:
+                cursor = cursor.children[c]
+        return True
