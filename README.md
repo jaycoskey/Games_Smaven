@@ -58,7 +58,6 @@ It might be expanded to allow human vs computer competition, or even use machine
 ## Task backlog
 * TODO: Get argparse help to print out all arguments (including subparser cmd help)
 * TODO: Complete search feature
-* TODO: GTree unit tests
 * TODO: Search tests (See below)
 * TODO: GTree.find_words efficiency. Any duplicate evaluation of states that can be efficiently removed?
 * TODO: Support (text) human vs human console play: move, swap, pass, resign.
@@ -70,6 +69,7 @@ It might be expanded to allow human vs computer competition, or even use machine
 * TODO: AI feature (See below)
 
 * DONE (2018-11-03): Compute points of moves 
+* DONE (2018-11-06): GTree unit tests
 
 ### Search tests
 * TODO: Empty board test. Rack:abcd. Dictionary:['bad', 'cab']. Expected: Each of 2 words in 2 directions & 3 positions.
