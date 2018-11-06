@@ -2,13 +2,30 @@
 
 from enum import Enum, auto
 import logging
+from random import randint
 
 
 class Bag:
     CHAR_BLANK = ' '
 
-    # TODO: self.letters: str
-    pass
+    def __init__(self, letter2count):
+        self.letters = ''.join([c * letter2count[c] for c in letter2count])
+
+    def __len__(self):
+        return len(self.letters)
+
+    def add(self, chars):
+        self.letters += chars
+
+    def draw(self, count):
+        def draw_single():
+            pos = randint(0, len(self.letters) - 1)
+            return self.letters.pop(pos)
+
+        if count > len(self.letters):
+            raise ValueError(f'Not enough letters: {len(self.letters)} available, but {count} requested')
+
+        return [draw_single for _ in range(count)]
 
 
 class GameState(Enum):
