@@ -133,12 +133,12 @@ if __name__ == '__main__':
     # TODO: Specify how players join and how their identity & connection info is obtained
     # TODO: Specify how input is obtained: keyboard/server:port/etc.
 
-    # AI args (feature selection not modifiable from command line)
+    # ML args (feature selection not modifiable from command line)
     # TODO: Input file containing weights
     # TODO: Output files containing game stats, and modified weights
 
     args = parser.parse_args()
-    if args.command not in [Command.SEARCH, Command.EXPERIMENT, Command.PLAYERS, Command.AI]:
+    if args.command not in [Command.SEARCH, Command.EXPERIMENT, Command.PLAYERS, Command.ML]:
         parser.print_help()
         parser.exit()
 
