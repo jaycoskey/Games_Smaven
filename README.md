@@ -73,8 +73,8 @@ It might be expanded to allow human vs computer competition, or even use machine
 
 ### Search tests
 * TODO: Empty board test. Rack:abcd. Dictionary:['bad', 'cab']. Expected: Each of 2 words in 2 directions & 3 positions.
-* TODO: Search test (fill contiguous): Board:"aa.....k", Rack:adrrvyz. Find aardvark
-* TODO: Search test (fill contiguous with blank): Board:"aa.....k", Rack:rd_aryz. Find aardvark
+* TODO: Search test (fill gap): Board:"aa.....k", Rack:adrrvyz. Find aardvark
+* TODO: Search test (fill gap with blank): Board:"aa.....k", Rack:rd_aryz. Find aardvark
 * TODO: Search test (cannot fill contiguous with blank): Board:"baa.....k", Rack:rd_aryz. Does not find aardvark
 * TODO: Any search test that finds words should find at least those words when a letter tile is replaced by a blank.
 * TODO: Search test (noncontiguous): Board:ear.hen.are, Rack:xtywz. Find "earthenware"
@@ -83,6 +83,8 @@ It might be expanded to allow human vs computer competition, or even use machine
 * TODO: Search test (parallel word): Board:"name", "wend", Rack:enox. Find (primary)oxen, (secondaries)now, axe, men, end
 
 ### AI feature: Training computer strategy
+* Add heuristics to computer play
+* Add end-game considerations to computer play (e.g., additional plies in alpha-beta pruning)
 * Evolve computer strategy via Computer vs Computer play
   * Note: Choosing the highest-scoring move in every round is not the best strategy.
     * For example, playing a BLANK tile to get one additional point is probably suboptimal.
