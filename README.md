@@ -57,6 +57,7 @@ It might be expanded to allow human vs computer competition, or even use machine
 
 ## Task backlog
 * TODO: Get argparse help to print out all arguments (including subparser cmd help)
+* TODO: Log/visualize search process (Highlight hooks, cursors, letters placed, primary words, secondary words)
 * TODO: Complete search feature
 * TODO: Search tests (See below)
 * TODO: GTree.find_words efficiency. Any duplicate evaluation of states that can be efficiently removed?
