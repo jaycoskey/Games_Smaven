@@ -54,6 +54,13 @@ class Board:
     def __getitem__(self, square):
         return self.letters[square.y][square.x]
 
+
+    def copy(self):
+        pass  # TODO
+
+    def find_moves(self, gtree, rack):
+        return gtree.find_moves(self, rack)
+
     def get_secondary_word(self, gtree, cursor, char, bdir):
         if bdir in [BoardDirection.LEFT, BoardDirection.RIGHT]:
             back = BoardDirection.UP

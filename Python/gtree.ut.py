@@ -52,31 +52,65 @@ class TestGTree_FindMoves(unittest.TestCase):
         run_config_test('test_secondary_words')
 
 
-def run_config_test(test_name):
+def run_config_test(test_name, verbose=True):
+    if verbose:
+        print(f'\n\n===Test: {test_name}===')
+
     with open('test_config.yml', 'r') as stream:
         config = yaml.load(stream)
 
     config_test = config[test_name]
+    if verbose:
+        print(f"*** Config keys: {', '.join(config_test)}")
+
     config_board = config_test['board']
+
+    # Dictionary
     config_dictionary = config_test['dictionary']
+    if verbose:
+        print(f'*** Dictionary words') 
+        for dword in config_dictionary:
+            print(f'\t- {dword}') 
+
+    # Rack
     config_rack = config_test['rack']
+    if verbose:
+        print(f'*** Rack letters: {config_rack}') 
+
+    # Words expected to be found
+    config_words_found = config_test['words_found']
+    if verbose:
+        print(f'*** Expected words')
+        if type(config_words_found).__name__ == 'str':
+            config_words_found = [config_words_found]
+        if config_words_found:
+            for word in config_words_found:
+                print(f'\t- {word}')
+        else:
+            print(f'\t<None>')
 
     board = Board(layout=None, rows=config_board)
     gtree = GTree()
     gtree.add_wordlist(config_dictionary)
     moves_found = gtree.find_moves(board, config_rack)
 
+    # Words actually found
     words_found = []
     for move in moves_found:
         words_found.append(move.primary_word)
         words_found.extend(move.secondary_words)
-    num_words_found = len(words_found)
 
-    config_words_found = config_test['words_found']
-    assert(all([ word in config_words_found
-                    for word in words_found
-                    ]))
+    if verbose:
+        print(f'*** Number of moves found={len(moves_found)}')
+        for move in moves_found:
+            print(f'==> {move}')
 
+    if config_words_found:
+        assert(all([ word in words_found
+                for word in config_words_found
+                ]))
+
+    # Words not expected to be found
     if 'words_not_found' in config_test:
         config_words_not_found = config_test['words_not_found']
         assert(all([word not in config_words_not_found

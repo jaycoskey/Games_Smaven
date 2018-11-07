@@ -52,7 +52,14 @@ def main(config, args):
             board.print()
             print(f'INFO: Rack: {rack}')
 
-        print('Warning: Search feature not yet implemented')
+        gtree = GTree('/usr/share/dict/words')
+        moves = board.find_moves(gtree, rack)
+        if moves:
+            for move in moves:
+                print(f'Move found: {move}')
+        else:
+                print(f'No moves found')
+
 
     elif args.command == Command.EXPERIMENT:
         # TODO: Init Board (BoardLayout, Bag)
@@ -91,7 +98,7 @@ if __name__ == '__main__':
     # a:               b:board   c:config           d:dictionary    e:experiment
     # f:fast?          g:gui     h:help             i:input/import? j:
     # k:(config-)keys? l:layout  m:machine_learning n:              o:logfile?
-    # p:players        q:        r:rack             s:skill_lvl?    t:text
+    # p:players        q:        r:rack             s:skill_lvl?    t:text mode
     # u:undo-enabled?  v:verbose w:weightfile (ml)? x:              y:
     # z:
     #

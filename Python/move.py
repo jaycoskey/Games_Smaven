@@ -10,6 +10,16 @@ class Move:
         self.primary_word = primary_word
         self.secondary_words = secondary_words if secondary_words else []
 
+    def __str__(self):
+        return (f"Primary: {str(self.primary_word)} <= {','.join(self.placed_letters)}"
+                + "\n"
+                + f"\tSecondary: {','.join(self.secondary_words)}"
+                )
+
+
+    def copy(self):
+        pass  # TODO
+
     def updated(self, new_placed_letters, bdir, new_char, new_secondary_words):
         return Move(self.placed_letters.extend(new_placed_letters)
                 , Util.update_with_char(self.primary_word, bdir, new_char)
@@ -23,12 +33,18 @@ class PlacedLetter:
         self.char = char
         self.square: Square
 
+    def __str__(self):
+        return f"'{self.char}'@{self.square}"
+
 
 class PlacedWord:
     def __init__(self, square_begin, square_end, word):
         self.square_begin = square_begin
         self.square_end = square_end
         self.word = word
+
+    def __str__(self):
+        return f'"{self.word}" @ [{self.square_begin} .. {self.square_end}]'
 
     def squares(self):
         if self.square_begin == self.square_end:

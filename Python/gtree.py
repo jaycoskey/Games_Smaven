@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import logging
+
+
 from board import Board, BoardDirection
 from move import Move, PlacedLetter, PlacedWord
 from typing import Iterable, List, Set
@@ -172,8 +175,10 @@ class GNode:
 class GTree:
     VERBOSE = False
 
-    def __init__(self):
+    def __init__(self, filename=None):
         self.root = GNode(GNode.CHAR_ROOT)
+        if filename:
+            self.add_wordfile(filename)
 
     def __len__(self):
         return len(self.root)
@@ -213,8 +218,6 @@ class GTree:
         hooks = board.hooks()
         for hook in hooks:
             for bdir in [BoardDirection.LEFT, BoardDirection.UP]:
-                # Find words from this hook; move to beginning on word in this board direction
-                # TODO: move_acc = ...
                 found_moves = self.root.find_moves(move_acc, board, hook, bdir, rack)
                 for move in found_moves:
                     result.add(move)
