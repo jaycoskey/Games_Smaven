@@ -43,7 +43,12 @@ class Board:
         def config2obj(c):
             return Board.CHAR_EMPTY if c == '.' else c
 
-        self.layout: BoardLayout = layout
+        if layout is None:
+            # For testing: If layout is None, then create a blank layout from rows.
+            self.layout = BoardLayout([['.' for c in row] for row in rows])
+        else:
+            self.layout: BoardLayout = layout
+
         self.letters: List[List[str]] = [[config2obj(c) for c in row] for row in rows]
 
     def __getitem__(self, square):
@@ -72,22 +77,29 @@ class Board:
             return PlacedWord(begin, end, word)
 
     # TODO: More efficient general solution? Set intersection? More efficient special cases (e.g., sparse board)?
-    def hooks(self, turn_num):
+    def hooks(self):
         """Return list of empty Squares adjacent to one already filled. (If board is empty, return center Square.)"""
-        if turn_num == 1:
+        if self.is_empty():
             return [Square(int(layout.width / 2), int(layout.height / 2))]
 
-        filled = set([s for s in self.filled_squares()])
+        filled = set([s for s in self.squares_filled()])
         if not filled:  # If first player passed, for some reason
             return [Square(int(layout.width / 2), int(layout.height / 2))]
 
         hooks = []
         for s in self.squares():
-            if board[s.y][s.x] is None:
+            if self[s] is None:
                 for adj in self.squares_adjacent(s):
                     if adj in s:
                         hooks.append(adj)
         return hooks
+
+    # TODO: Improve efficiency. Unless undo is implemented, is_empty can be cached.
+    #       Or hooks() could just be called with an is_board_empty flag.
+    def is_empty(self):
+        return all([ all([c == BoardSquareType.BLANK for c in row])
+                        for row in self.letters
+                        ])
 
     def is_square_on_board(self, s):
         return (0 <= s.x < self.width) and (0 <= s.y < self.height)
@@ -117,8 +129,8 @@ class Board:
 
     def squares_filled(self):
         for s in self.squares():
-            if board[s.y][s.x] is not None:
-                yield Square(s.x, s.y)
+            if self[s] is not None:
+                yield s
 
     def word2points(self, square2pl:Dict[Square, PlacedLetter], pw:PlacedWord):
         points = 0

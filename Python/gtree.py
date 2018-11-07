@@ -2,7 +2,7 @@
 
 from board import Board, BoardDirection
 from move import Move, PlacedLetter, PlacedWord
-from typing import Iterable, List
+from typing import Iterable, List, Set
 from util import Square
 
 
@@ -54,7 +54,7 @@ class GNode:
             child = self.add_child(s[0])
             child.add_string(s[1:])
 
-    def find_words(self, move_acc:Move, board:Board, cursor:Square, bdir:BoardDirection, rack:str):
+    def find_moves(self, move_acc:Move, board:Board, cursor:Square, bdir:BoardDirection, rack:str):
         """Recursively call down the Trie while searching for words that meet dictionary, rack, and board constraints.
         Each call involves branching logic made at a single GNode.
         Forming the primary word (see below) usually takes multiple recursive calls, in two phases:
@@ -91,7 +91,7 @@ class GNode:
                     next_cursor = Util.add_sq_bdir(move_acc.primary_word.square_end, rev_bdir)
                     pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
 
-                    yield from child_gnode.find_words(  # TODO
+                    yield from child_gnode.find_moves(  # TODO
                             move_acc
                             , board
                             , next_cursor
@@ -110,7 +110,7 @@ class GNode:
                                             else move_acc.secondary_words
                                             )
                     pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
-                    yield from child_gnode.find_words(  # TODO
+                    yield from child_gnode.find_moves(  # TODO
                             Move(move_acc.placed_letters
                                 , next_primary_word
                                 , secondary_words
@@ -132,7 +132,7 @@ class GNode:
                                                 else move_acc.secondary_words
                                                 )
                         pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
-                        yield from child_gnode.find_words(  # TODO
+                        yield from child_gnode.find_moves(  # TODO
                                 Move(move_acc.placed_letters + [PlacedLetter(cursor, child_gnode.char)]
                                     , next_primary_word
                                     , secondary_words
@@ -153,7 +153,7 @@ class GNode:
                                             else move_acc.secondary_words
                                             )
                         pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
-                        yield from child_gnode.find_words(  # TODO
+                        yield from child_gnode.find_moves(  # TODO
                                 Move(move_acc.placed_letters + [PlacedLetter(cursor, child_gnode.char)]
                                     , next_primary_word
                                     , secondary_words
@@ -208,17 +208,17 @@ class GTree:
             self.add_word(word)
 
     # How much are we duplicating work across hooks? Any way to reduce effort?
-    def find_words(self, board: Board, rack: str)->List[PlacedWord]:
-        words = set()
-        hooks = board.get_hooks()
+    def find_moves(self, board: Board, rack: str)->Set[Move]:
+        result = set()
+        hooks = board.hooks()
         for hook in hooks:
             for bdir in [BoardDirection.LEFT, BoardDirection.UP]:
                 # Find words from this hook; move to beginning on word in this board direction
                 # TODO: move_acc = ...
-                found_words = self.root.find_words(move_acc, board, hook, bdir, rack)
-                for word in found_words:
-                    words.add(word)
-        return words
+                found_moves = self.root.find_moves(move_acc, board, hook, bdir, rack)
+                for move in found_moves:
+                    result.add(move)
+        return result
 
     def has_word(self, word)->bool:
         """Check to see if the given word is in the GTree.
