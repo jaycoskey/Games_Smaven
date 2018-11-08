@@ -85,7 +85,7 @@ class GNode:
             if self.char == GNode.CHAR_EOW:
                 if (not board.is_square_on_board(next_cursor)) or (board[next_cursor] == Board.CHAR_EMPTY):
                     pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
-                    yield move_acc  # TODO
+                    yield move_acc.copy()
                     post_call_hash = hash((move_acc, board, cursor, bdir, rack))
                     assert(pre_call_hash == post_call_hash)
             elif self.char == GNode.CHAR_REV:
@@ -94,8 +94,8 @@ class GNode:
                     next_cursor = Util.add_sq_bdir(move_acc.primary_word.square_end, rev_bdir)
                     pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
 
-                    yield from child_gnode.find_moves(  # TODO
-                            move_acc
+                    yield from child_gnode.find_moves(
+                            move_acc.copy()
                             , board
                             , next_cursor
                             , rev_bdir
@@ -106,17 +106,16 @@ class GNode:
             else:  # self.char is alphabetic
                 is_char_on_board = board[cursor] == child_gnode.char
                 if is_char_on_board:
-                    next_primary_word = move_acc.primary_word.updated(cursor, bdir, child_gnode.char)
-                    secondary_word = board.get_secondary_word(cursor, bdir, child_gnode.char)
-                    secondary_words = (move_acc.secondary_words + [secondary_word]
-                                            if secondary_word
-                                            else move_acc.secondary_words
+                    new_secondary_word = board.get_secondary_word(cursor, bdir, child_gnode.char)
+                    secondary_words_copy = [pw.copy() for pw in move_acc.secondary_words]
+                    next_secondary_words = (secondary_words_copy + [new_secondary_word] if new_secondary_word
+                                            else seconary_words_copy
                                             )
                     pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
-                    yield from child_gnode.find_moves(  # TODO
-                            Move(move_acc.placed_letters
-                                , next_primary_word
-                                , secondary_words
+                    yield from child_gnode.find_moves(
+                            Move([pl.copy() for pl in move_acc.placed_letters]
+                                , move_acc.primary_word.updated(cursor, bdir, child_gnode.char)
+                                , next_secondary_words
                                 )
                             , board
                             , Util.add_sq_bdir(cursor, bdir)
@@ -125,20 +124,20 @@ class GNode:
                             )
                     post_call_hash = hash((move_acc, board, cursor, bdir, rack))
                     assert(pre_call_hash == post_call_hash)
-                else:
+                else:  # TODO: Unify character/blank cases into one
                     is_char_in_rack = child_gnode.char in rack
                     if is_char_in_rack:
-                        next_primary_word = move_acc.primary_word.updated(cursor, bdir, child_gnode.char)
-                        secondary_word = board.get_secondary_words(cursor, bdir, child_gnode.char)
-                        secondary_words = (move_acc.secondary_words + [secondary_word]
-                                                if secondary_word
-                                                else move_acc.secondary_words
+                        new_secondary_word = board.get_secondary_word(cursor, bdir, child_gnode.char)
+                        secondary_words_copy = [pw.copy() for pw in move_acc.secondary_words]
+                        next_secondary_words = (secondary_words_copy + [new_secondary_word] if new_secondary_word
+                                                else secondary_words_copy
                                                 )
                         pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
-                        yield from child_gnode.find_moves(  # TODO
-                                Move(move_acc.placed_letters + [PlacedLetter(cursor, child_gnode.char)]
-                                    , next_primary_word
-                                    , secondary_words
+                        yield from child_gnode.find_moves(
+                                Move([pl.copy() for pl in move_acc.placed_letters]
+                                        + [PlacedLetter(cursor, child_gnode.char)]
+                                    , move_acc.primary_word.updated(cursor, bdir, child_gnode.char)
+                                    , next_secondary_words
                                     )
                                 , board
                                 , Util.add_sq_bdir(cursor, bdir)
@@ -149,22 +148,22 @@ class GNode:
                         assert(pre_call_hash == post_call_hash)
                     is_blank_in_rack = GNode.CHAR_BLANK in rack
                     if is_blank_in_rack:
-                        next_primary_word = move_acc.primary_word.updated(cursor, bdir, child_gnode.char)
-                        secondary_word = board.get_secondary_words(cursor, bdir, child_gnode.char)
-                        secondary_words = (move_acc.secondary_words + [secondary_word]
-                                            if secondary_word
-                                            else move_acc.secondary_words
-                                            )
+                        new_secondary_word = board.get_secondary_word(cursor, bdir, child_gnode.char.upper())  # Note: Blank-specific
+                        secondary_words_copy = [pw.copy() for pw in move_acc.secondary_words]
+                        next_secondary_words = (secondary_words_copy + [new_secondary_word] if new_secondary_word
+                                                else secondary_words_copy
+                                                )
                         pre_call_hash = hash((move_acc, board, cursor, bdir, rack))
-                        yield from child_gnode.find_moves(  # TODO
-                                Move(move_acc.placed_letters + [PlacedLetter(cursor, child_gnode.char)]
-                                    , next_primary_word
-                                    , secondary_words
+                        yield from child_gnode.find_moves(
+                                Move([pl.copy() for pl in move_acc.placed_letters]
+                                    + [PlacedLetter(cursor, child_gnode.char.upper())]  # Note: Blank-specific
+                                    , move_acc.primary_word.updated(cursor, bdir, child_gnode.char)
+                                    , next_secondary_words
                                     )
                                 , board
                                 , Util.add_sq_bdir(cursor, bdir)
                                 , bdir
-                                , Util.removed_char(rack, child_gnode.char)
+                                , Util.removed_char(rack, Bag.CHAR_BLANK)  # Note: Blank-specific
                                 )
                         post_call_hash = hash((move_acc, board, cursor, bdir, rack))
                         assert(pre_call_hash == post_call_hash)

@@ -16,9 +16,11 @@ class Move:
                 + f"\tSecondary: {','.join(self.secondary_words)}"
                 )
 
-
     def copy(self):
-        pass  # TODO
+        return Move([pl.copy() for pl in self.placed_letters]
+                    , self.primary_word.copy()
+                    , [pw.copy() for pw in self.secondary_words]
+                    )
 
     def updated(self, new_placed_letters, bdir, new_char, new_secondary_words):
         return Move(self.placed_letters.extend(new_placed_letters)
@@ -27,14 +29,20 @@ class Move:
                 )
 
 
-# Note: For now, use uppercase to represent the character used for blank tiles & lowercase for others.
+# Note: The use here of lowercase and uppercase does not work for most languages.
 class PlacedLetter:
-    def __init__(self, square:Square, char:str):
-        self.char = char
+    def __init__(self, square:Square, char:str, is_blank:bool=False):
+        self.char = upper(char) if is_blank else lower(char)
         self.square: Square
 
     def __str__(self):
         return f"'{self.char}'@{self.square}"
+
+    def copy(self):
+        return PlacedLetter(self.square, self.char)
+
+    def is_blank(self):
+        return isupper(self.char)
 
 
 class PlacedWord:
@@ -45,6 +53,9 @@ class PlacedWord:
 
     def __str__(self):
         return f'"{self.word}" @ [{self.square_begin} .. {self.square_end}]'
+
+    def copy(self):
+        return PlacedWord(self.square_begin, self.square_end, self.word)
 
     def squares(self):
         if self.square_begin == self.square_end:
@@ -69,8 +80,6 @@ class PlacedWord:
                 self.square_end if not BoardDirection.is_forward(bdir)
                 else Util.add_sq_bdir(self.square_end, bdir)
                 )
-        next_word = (
-                Util.append_char(self.word, child_gnode.char) if BoardDirection.is_forward(bdir)
-                else Util.prepend_char(self.word, child_gnode.char)
-                )
+        next_word = Util.updated_str_with_char(self.word, bdir, char)
+
         return PlacedWord(next_square_begin, next_square_end, next_word)

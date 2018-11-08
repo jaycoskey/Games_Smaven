@@ -41,9 +41,5 @@ class Util:
         return { d[k]: k for k in d }
 
     @staticmethod
-    def prepend_char(s, c):
-        return c + s
-
-    @staticmethod
-    def append_char(s, c):
-        return s + c
+    def updated_str_with_char(s, bdir, c):
+        return (s + c) if BoardDirection.is_forward(bdir) else (c + s)

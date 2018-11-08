@@ -55,9 +55,6 @@ class Board:
         return self.letters[square.y][square.x]
 
 
-    def copy(self):
-        pass  # TODO
-
     def find_moves(self, gtree, rack):
         return gtree.find_moves(self, rack)
 
