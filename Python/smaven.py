@@ -10,6 +10,7 @@ from game import Game
 from gtree import GTree
 from move import Move, PlacedLetter, PlacedWord
 from player import Player
+from search import Search
 from turn import Turn
 from util import Util
 
@@ -53,7 +54,8 @@ def main(config, args):
             print(f'INFO: Rack: {rack}')
 
         gtree = GTree('/usr/share/dict/words')
-        moves = board.find_moves(gtree, rack)
+        search = Search(gtree, board)
+        moves = search.find_moves(rack)
         if moves:
             for move in moves:
                 print(f'Move found: {move}')
@@ -95,11 +97,11 @@ def main(config, args):
 
 if __name__ == '__main__':
     # Argument summary:
-    # a:               b:board   c:config           d:dictionary    e:experiment
-    # f:fast?          g:gui     h:help             i:input/import? j:
-    # k:(config-)keys? l:layout  m:machine_learning n:              o:logfile?
-    # p:players        q:        r:rack             s:skill_lvl?    t:text mode
-    # u:undo-enabled?  v:verbose w:weightfile (ml)? x:              y:
+    # a:               b:board   c:config            d:dictionary    e:experiment
+    # f:fast?          g:gui     h:help              i:input/import? j:
+    # k:(config-)keys? l:layout  m:machine_learning? n:              o:logfile?
+    # p:players        q:        r:rack              s:skill_lvl?    t:text mode
+    # u:undo-enabled?  v:verbose w:weightfile (ml)?  x:              y:
     # z:
     #
     prog_description = 'Toolbox for word square games, such as Scrabble and Words With Friends'

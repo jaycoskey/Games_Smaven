@@ -1,30 +1,9 @@
 #!/usr/bin/env python
 
 from enum import Enum, auto
-from move import Move, PlacedLetter, PlacedWord
+from move import PlacedWord
 from typing import Dict, List
 from util import Square, Util
-
-
-# We store the board as a list of rows [i.e., (y, x)]. Should these directions be stored as (y, x)?
-class BoardDirection(Enum):
-    LEFT = (-1, 0)
-    RIGHT = (1, 0)
-    UP = (0, 1)
-    DOWN = (0, -1)
-
-    @staticmethod
-    def is_forward(bdir):
-        return bdir in [BoardDirection.RIGHT, BoardDirection.DOWN]
-
-    @staticmethod
-    def reversed(bdir):
-        if bdir == BoardDirection.LEFT: return BoardDirection.RIGHT
-        elif bdir == BoardDirection.UP: return BoardDirection.DOWN
-
-        # The following aren't needed unless words can be played right->left or down->up.
-        elif bdir == BoardDirection.RIGHT: return BoardDirection.LEFT
-        elif bdir == BoardDirection.DOWN: return BoardDirection.UP
 
 
 class BoardSquareType(Enum):
@@ -32,6 +11,7 @@ class BoardSquareType(Enum):
     CENTER = auto()
     DOUBLE_LETTER = auto()
     DOUBLE_WORD = auto()
+    INIT_HOOK = auto()
     TRIPLE_LETTER = auto()
     TRIPLE_WORD = auto()
 
@@ -43,11 +23,19 @@ class Board:
         def config2obj(c):
             return Board.CHAR_EMPTY if c == '.' else c
 
+        is_rectangle = all([len(row) == len(rows[0]) for row in rows])
+        assert(is_rectangle)
+
+        self.height = len(rows)
+        self.width = len(rows[0])
+
         if layout is None:
             # For testing: If layout is None, then create a blank layout from rows.
             self.layout = BoardLayout([['.' for c in row] for row in rows])
         else:
             self.layout: BoardLayout = layout
+            assert(self.height == self.layout.height)
+            assert(self.width == self.layout.width)
 
         self.letters: List[List[str]] = [[config2obj(c) for c in row] for row in rows]
 
@@ -58,31 +46,9 @@ class Board:
     def find_moves(self, gtree, rack):
         return gtree.find_moves(self, rack)
 
-    def get_secondary_word(self, gtree, cursor, char, bdir):
-        if bdir in [BoardDirection.LEFT, BoardDirection.RIGHT]:
-            back = BoardDirection.UP
-        else:
-            back = BoardDirection.LEFT
-        forward = BoardDirection.reverse(back)
-
-        begin = cursor
-        end = cursor
-        word = char
-
-        while True:
-            next_begin = Util.add_sq_bdir(begin, back)
-            if self.has_character(next_begin):
-                begin = next_begin
-        while True:
-            next_end = Util.add_sq_bdir(end, forward)
-            if self.has_character(next_end):
-                end = next_end
-        if gtree.has_word(word):
-            return PlacedWord(begin, end, word)
-
     # TODO: More efficient general solution? Set intersection? More efficient special cases (e.g., sparse board)?
     def hooks(self):
-        """Return list of empty Squares adjacent to one already filled. (If board is empty, return center Square.)"""
+        """Return empty Squares adjacent to ones already filled. (If board is empty, return INIT_HOOKS.)"""
         if self.is_empty():
             return [Square(int(layout.width / 2), int(layout.height / 2))]
 
@@ -105,10 +71,13 @@ class Board:
                         for row in self.letters
                         ])
 
+    def is_square_empty(self, s):
+        return self[s] != Board.CHAR_EMPTY
+
     def is_square_on_board(self, s):
         return (0 <= s.x < self.width) and (0 <= s.y < self.height)
 
-    def move2points(self, move:Move):
+    def move2points(self, move):
         square2pl = {Square(pl.x, pl.y): pl for pl in move.placed_letters}
         points = self.points_word(square2pl, move.primary_word)
         for secondary_word in move.secondary_words:
@@ -136,7 +105,7 @@ class Board:
             if self[s] is not None:
                 yield s
 
-    def word2points(self, square2pl:Dict[Square, PlacedLetter], pw:PlacedWord):
+    def word2points(self, square2pl, pw:PlacedWord):
         points = 0
         word_multiplier = 1
         for sq in pw.squares():
@@ -180,3 +149,5 @@ class BoardLayout:
     def print(self):
         for row in self.layout:
             print('.'.join([BoardLayout.bstype2char[c] for c in row]))
+
+

@@ -3,13 +3,16 @@
 from collections import namedtuple
 
 
+from board_direction import BoardDirection
+
+
 Square = namedtuple('Square', ['x', 'y'])
 
 
 class Util:
     @staticmethod
     def add_sq_bdir(sq, bdir):
-        return Square(sq.x + bdir.x, sq.y + bdir.y)
+        return Square(sq.x + bdir.value[0], sq.y + bdir.value[1])
 
     @staticmethod
     def do_rows_form_square(rows):
@@ -39,6 +42,10 @@ class Util:
     @staticmethod
     def reversed_dict(d):
         return { d[k]: k for k in d }
+
+    @staticmethod
+    def sq2str(square):
+        return f'({square[0]},{square[1]})' if square else 'None'
 
     @staticmethod
     def updated_str_with_char(s, bdir, c):

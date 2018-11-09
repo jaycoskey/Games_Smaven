@@ -1,20 +1,25 @@
 #!/usr/bin/env python
 
+from board_direction import BoardDirection
 from typing import List
-from util import Square
+from util import Square, Util
 
 
 class Move:
-    def __init__(self, placed_letters:List['PlacedLetter'], primary_word:'PlacedWord'):
+    def __init__(self, placed_letters:List['PlacedLetter']
+            , primary_word:'PlacedWord', secondary_words=None):
         self.placed_letters = placed_letters
         self.primary_word = primary_word
         self.secondary_words = secondary_words if secondary_words else []
 
     def __str__(self):
-        return (f"Primary: {str(self.primary_word)} <= {','.join(self.placed_letters)}"
-                + "\n"
-                + f"\tSecondary: {','.join(self.secondary_words)}"
-                )
+        pls_val = ','.join([str(pl) for pl in self.placed_letters])
+        pls = f'placed_letters={pls_val}'
+        pw_val = str(self.primary_word)
+        pw = f'primary_word={pw_val}'
+        sec_val = ','.join([str(w) for w in self.secondary_words])
+        sec = f'secondary_words=[{sec_val}]'
+        return f'Move<{pls},{pw},{sec}'
 
     def copy(self):
         return Move([pl.copy() for pl in self.placed_letters]
@@ -32,11 +37,11 @@ class Move:
 # Note: The use here of lowercase and uppercase does not work for most languages.
 class PlacedLetter:
     def __init__(self, square:Square, char:str, is_blank:bool=False):
-        self.char = upper(char) if is_blank else lower(char)
-        self.square: Square
+        self.char = upper(char) if is_blank else char.lower()
+        self.square = square
 
     def __str__(self):
-        return f"'{self.char}'@{self.square}"
+        return f"'{self.char}'@{Util.sq2str(self.square)}"
 
     def copy(self):
         return PlacedLetter(self.square, self.char)
@@ -52,7 +57,7 @@ class PlacedWord:
         self.word = word
 
     def __str__(self):
-        return f'"{self.word}" @ [{self.square_begin} .. {self.square_end}]'
+        return f'"{self.word}"@[{Util.sq2str(self.square_begin)}..{Util.sq2str(self.square_end)}]'
 
     def copy(self):
         return PlacedWord(self.square_begin, self.square_end, self.word)
