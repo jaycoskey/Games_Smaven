@@ -55,7 +55,7 @@ It might be expanded to allow human vs computer competition, or even use machine
 * Should the GADDAG (class GTree) be compressed?
 * Pygame as GUI library?
 
-## Task backlog
+## Task backlog (not priority-ordered)
 * TODO: Get argparse help to print out all arguments (including subparser cmd help)
 * TODO: Log/visualize search process (Highlight hooks, cursors, letters placed, primary words, secondary words)
 * TODO: Complete search feature
@@ -64,6 +64,7 @@ It might be expanded to allow human vs computer competition, or even use machine
 * TODO: Support (text) human vs human console play: move, swap, pass, resign.
 * TODO: Support game state serialization/deserialization (incl. turn history)
 * TODO: Implement GUI versions
+* TODO: Support Undo
 * TODO: Support human vs computer game play. (Initially, computer chooses highest-scoring move)
 * TODO: Distributed system with clients & server
 * TODO: Hex board?
