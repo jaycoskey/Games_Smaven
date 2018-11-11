@@ -77,11 +77,13 @@ class Board:
     def is_square_on_board(self, s):
         return (0 <= s.x < self.width) and (0 <= s.y < self.height)
 
-    def move2points(self, move):
+    def move2points(self, move, rack_size, bingo_points):
         square2pl = {Square(pl.x, pl.y): pl for pl in move.placed_letters}
         points = self.points_word(square2pl, move.primary_word)
         for secondary_word in move.secondary_words:
             points += self.word2points(square2pl, move.secondary_word)
+        if len(move.placed_letters) == rack_size:
+            points += bingo_points
         return points
 
     def print(self):
@@ -149,5 +151,3 @@ class BoardLayout:
     def print(self):
         for row in self.layout:
             print('.'.join([BoardLayout.bstype2char[c] for c in row]))
-
-
