@@ -9,6 +9,7 @@ from board import Board, BoardLayout
 from game import Game
 from gtree import GTree
 from move import Move, PlacedLetter, PlacedWord
+import os
 from player import Player
 from search import Search
 from turn import Turn
@@ -23,27 +24,27 @@ class Command:
 
 
 def main(config, args):
+    # TODO: search ==> Initialize Board (BoardLayout, Board) ==> Enter rack & find words
+    if args.layoutfile is None or len(args.layoutfile) == 0:
+        raise ValueError('search feature requires layoutfile to be set')
+    if args.boardfile is None or len(args.boardfile) == 0:
+        raise ValueError('search feature requires boardfile to be set')
+    if args.rack is None or len(args.rack) == 0:
+        raise ValueError('search feature requires rack to be set')
+
+    do_use_layout_config = args.layoutfile[0] == '@'
+    layout_rows = ( Util.get_rows_from_config(config[args.layoutfile[1:]])
+                    if do_use_layout_config
+                    else Util.get_rows_from_filename(args.layoutfile))
+    layout = BoardLayout(layout_rows)
+
+    do_use_board_config = args.boardfile[0] == '@'
+    board_rows = ( Util.get_rows_from_config(config[args.boardfile[1:]])
+                   if do_use_board_config
+                   else Util.get_rows_from_filename(args.boardfile))
+    board = Board(layout=layout, rows=board_rows)
+
     if args.command == Command.SEARCH:
-        # TODO: search ==> Initialize Board (BoardLayout, Board) ==> Enter rack & find words
-        if args.layoutfile is None or len(args.layoutfile) == 0:
-            raise ValueError('search feature requires layoutfile to be set')
-        if args.boardfile is None or len(args.boardfile) == 0:
-            raise ValueError('search feature requires boardfile to be set')
-        if args.rack is None or len(args.rack) == 0:
-            raise ValueError('search feature requires rack to be set')
-
-        do_use_layout_config = args.layoutfile[0] == '@'
-        layout_rows = ( Util.get_rows_from_config(config[args.layoutfile[1:]])
-                        if do_use_layout_config
-                        else Util.get_rows_from_filename(args.layoutfile))
-        layout = BoardLayout(layout_rows)
-
-        do_use_board_config = args.boardfile[0] == '@'
-        board_rows = ( Util.get_rows_from_config(config[args.boardfile[1:]])
-                       if do_use_board_config
-                       else Util.get_rows_from_filename(args.boardfile))
-        board = Board(layout=layout, rows=board_rows)
-
         rack = args.rack
 
         if args.verbose:
@@ -69,18 +70,10 @@ def main(config, args):
         raise NotImplementedError('Experiment feature not yet implemented')
 
     elif args.command == Command.PLAYERS:
-        char2count = {}
-        for count in config.letter_counts_scrabble_en:
-            for char in config.letter_counts_scrabble_en[count]:
-                char2count[char] = count
-
-        # TODO: Init Game (Players, BoardLayout, Board, Bag); play_game(...)
-        char2points = {}
-        for pts in config.letter_points_scrabble_en:  # TODO: Allow choice of point mapping 
-            for char in config.letter_points_scrabble_en[pts]:
-                char2points[char] = pts
-        # TODO: ...
-        raise NotImplementedError('Players specification not yet implemented')
+        bag = Bag(config.letter_counts_scrabble_en)
+        log_filename = config['log_filename'] + str(os.getpid()) + '.log'
+        with Game(board, player_count, char2points, log_filename) as game:
+            game.play()
 
     elif args.command == Command.ML:  # Train computer strategy via ML
         # TODO: bag = ...

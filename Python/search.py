@@ -7,6 +7,7 @@ from game import Bag
 from gtree import GNode
 from util import Square, Util
 
+
 # Add copying to the appropriate places to avoid aliasing
 class Search:
     def __init__(self, gtree, board):
@@ -45,6 +46,16 @@ class Search:
                 is_blank_in_rack = GNode.CHAR_BLANK in ss.rack
                 if is_blank_in_rack:
                     yield from self.find_moves_ss(ss.update_blank_in_rack(board))
+
+    def get_secondary_words(self, gtree, board, placed_letters, primary_word):
+        # TODO: Get direction of primary_word
+        result = []
+        ss = SearchState(...)
+        for pl in placed_letters:
+            sw = ss.get_secondary_word(gtree, board)
+            if sw:
+                result.append(sw)
+         return result
 
 class SearchState:
     def __init__(self, move_acc, node, cursor, bdir, rack):
@@ -103,7 +114,6 @@ class SearchState:
                 break
         if gtree.has_word(word):
             return PlacedWord(begin, end, word)
-
 
     def is_next_cursor_letter(self, board):
         sq = self.next_cursor(board)

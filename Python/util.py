@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from collections import namedtuple
+from collections import Counter, namedtuple
 
 
 from board_direction import BoardDirection
@@ -35,9 +35,24 @@ class Util:
             return [line.strip() for line in f.readlines()]
 
     @staticmethod
+    def is_subset(s1, s2):
+        cntr1 = Counter(s1)
+        cntr2 = Counter(s2)
+        for k in cntr1.keys():
+            if k not in cntr2 or cntr2[k] < cntr1[k]:
+                return False
+        return True
+
+    @staticmethod
     def removed_char(rack, c):
         index = rack.find(c)
         return rack[0: index] + rack[index: len(rack)]
+
+    @staticmethod
+    def removed_chars(rack, s):
+        for c in s:
+            rack = removed_char(rack, c)
+        return rack
 
     @staticmethod
     def reversed_dict(d):

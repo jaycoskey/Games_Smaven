@@ -7,9 +7,16 @@ from random import randint
 
 class Bag:
     CHAR_BLANK = ' '
+    DRAWN_NONE = ''
+    DRAWN_UNKNOWN = '?'
+    DISCARDED_NONE = ''
 
-    def __init__(self, letter2count):
-        self.letters = ''.join([c * letter2count[c] for c in letter2count])
+    def __init__(self, count2chars):
+        char2count = {}
+        for count in count2chars:
+            for char in count2chars[count]:
+                char2count[char] = count
+        self.letters = ''.join([c * char2count[c] for c in char2count])
 
     def __len__(self):
         return len(self.letters)
@@ -35,41 +42,90 @@ class GameState(Enum):
 
 
 class Game:
-    def __init__(self, board, players, char2points, log_filename):
+    def __init__(self, config, board, num_players, points2chars, log_filename):
+        self.bag = bag
         self.board = board
-        self.player_map = {p.id: p for p in players}
+        self.cur_turn_id = 1
+        self.game_state = GameState.NOT_STARTED
+        self.history:List[Turn] = []
+        self.num_players = num_players
+        self.winner = None  # Remove? 
 
+        self.char2points = {c:points2chars[p] for c in points2chars[p] for p in points2chars}
+
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+        handler = logging.FileHandler(log_filename)
+        handler.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s:' + logging.BASIC_FORMAT)
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+
+    def __enter__(self):
+        self.get_players()
+
+    def __exit__(self):
+        # Clean up resources, notify players, etc.
+        pass
+
+    def _init_players(self):
+        players = self.get_players()
+        self.player_map = {p.id: p for p in players}
         ordered_ids = [p.id for p in players]
-        num_players = len(ordered_ids)
         self.player_order = ordered_ids
         self.pid2next = { ordered_ids[k]: ordered_ids[k+1] for k in range(0, num_players - 1) }
         self.pid2next[ordered_ids[num_players - 1]] = ordered_ids[0]
-
-        self.bag = bag
-        self.char2points = char2points
-        self.cur_turn_id = 1
         self.cur_player_id = player_order[0]
-        self.game_state = GameState.NOT_STARTED
-        self.history:List[Turn] = []
-        self.logger = logging.getLogger(__name__)
-        self.log_filename = log_filename
-        self.winner = None  # Remove? 
 
-    def exit(self):
-        """Clean up any resources"""
-        pass
+    def get_players(self, num_players):
+        result = []
+        for player_id in range(1, num_players + 1):
+            p = Player(self, player_id)
+            p.get_name()
+            results.append(p)
+        return result
 
-    def game_play(self):
+    def play(self):
+        while True:
+            self.game_play_one_game()
+            response = input('Play again (y/n)? ').strip()
+            if not response[0].lower() == 'y':
+                break
+        print('Bye!')
+
+    def play_one_game(self):
+        self.game_state = GameState.IN_PLAY
         while self.game_state == GameState.IN_PLAY:
             turn = self.turn_get(self.cur_player_id)
+            if turn.turn_type == TurnType.RESIGN:
+                self.game_state == GameState.DONE
             self.turn_execute(turn)
             self.cur_player_id = self.pid2next[self.cur_player_id]
 
     def turn_execute(self, turn):
-        pass
+        player = self.get_player(turn.player_id)
+        if turn.turn_type == TurnType.PLACE:
+            placed_chars = ''.join([pl.char for pl in turn.move.placed_letters])
+            TODO: remove letters from rack
+            TODO: place letters on board
+            TODO: increment player score
+            drawn_letters = bag.draw(len(placed_letters))
 
-    def turn_get(self, player_id):
-        pass
+            placed_letter_count = len(turn.move.placed_letters)
+            drawn_letters_count = min(placed_letter_count, len(bag))
+            drawn_letters = bag_draw
+
+        elif turn.turn_type == TurnType.SWAP:
+            TODO: remove letters from rack
+            TODO: draw from bag
+
+        elif turn.turn_type == TurnType.PASS:
+            TODO: if previous player passed, game is a tie
+
+        elif turn.turn_type == TurnType.RESIGN:
+        else:
+            raise ValueError(f'Unknown turn type: {turn.turn_type}')
 
 
 class GameCommunication:
@@ -88,4 +144,3 @@ class GameCommunication:
     @staticmethod
     def report_turn_from_human():
         pass  # TODO 
-
