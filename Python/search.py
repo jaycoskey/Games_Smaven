@@ -55,7 +55,7 @@ class Search:
             sw = ss.get_secondary_word(gtree, board)
             if sw:
                 result.append(sw)
-         return result
+        return result
 
 class SearchState:
     def __init__(self, move_acc, node, cursor, bdir, rack):
@@ -140,7 +140,7 @@ class SearchState:
         if new_secondary_word:
             self.move_acc.secondary_words.append(new_secondary_word)
         self.cursor = self.next_cursor(board)
-        self.rack = Util.removed_char(self.rack, Bag.CHAR_BLANK)
+        self.rack = Util.remove_char(self.rack, Bag.CHAR_BLANK)
 
     def update_char_in_rack(self, board):
         self.move_acc.placed_letters.extend(PlacedLetter(cursor, node.char()))
@@ -149,7 +149,7 @@ class SearchState:
         if new_secondary_word:
             self.move_acc.secondary_words.append(new_secondary_word)
         self.cursor = self.next_cursor(board)
-        self.rack = Util.removed_char(self.rack, node.char)
+        self.rack = Util.remove_char(self.rack, node.char)
 
     def update_char_on_board(self, board):
         # Do not update placed_letters

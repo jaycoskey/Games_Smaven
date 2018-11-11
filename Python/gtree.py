@@ -101,7 +101,7 @@ class GNode:
 #                            , board
 #                            , next_cursor
 #                            , rev_bdir
-#                            , Util.removed_char_from_rack(rack, child_gnode.char)
+#                            , Util.remove_char(rack, child_gnode.char)
 #                            )
 #                    post_call_hash = hash((move_acc, board, cursor, bdir, rack))
 #                    assert(pre_call_hash == post_call_hash)
@@ -144,7 +144,7 @@ class GNode:
 #                                , board
 #                                , Util.add_sq_bdir(cursor, bdir)
 #                                , bdir
-#                                , Util.removed_char(rack, child_gnode.char)
+#                                , Util.remove_char(rack, child_gnode.char)
 #                                )
 #                        post_call_hash = hash((move_acc, board, cursor, bdir, rack))
 #                        assert(pre_call_hash == post_call_hash)
@@ -165,7 +165,7 @@ class GNode:
 #                                , board
 #                                , Util.add_sq_bdir(cursor, bdir)
 #                                , bdir
-#                                , Util.removed_char(rack, Bag.CHAR_BLANK)  # Note: Blank-specific
+#                                , Util.remove_char(rack, Bag.CHAR_BLANK)  # Note: Blank-specific
 #                                )
 #                        post_call_hash = hash((move_acc, board, cursor, bdir, rack))
 #                        assert(pre_call_hash == post_call_hash)

@@ -44,14 +44,15 @@ class Util:
         return True
 
     @staticmethod
-    def removed_char(rack, c):
+    def remove_char(rack, c):
         index = rack.find(c)
-        return rack[0: index] + rack[index: len(rack)]
+        end = len(rack)
+        return rack[0: index] + rack[index + 1: end]
 
     @staticmethod
-    def removed_chars(rack, s):
+    def remove_chars(rack, s):
         for c in s:
-            rack = removed_char(rack, c)
+            rack = Util.remove_char(rack, c)
         return rack
 
     @staticmethod
@@ -61,6 +62,10 @@ class Util:
     @staticmethod
     def sq2str(square):
         return f'({square[0]},{square[1]})' if square else 'None'
+
+    @staticmethod
+    def tabify(s):
+        return '\n'.join(['\t{}'.format(row) for row in s.splitlines()])
 
     @staticmethod
     def updated_str_with_char(s, bdir, c):

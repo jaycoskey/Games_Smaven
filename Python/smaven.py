@@ -6,7 +6,7 @@ import sys
 import yaml
 
 from board import Board, BoardLayout
-from game import Game
+from game import Bag, Game
 from gtree import GTree
 from move import Move, PlacedLetter, PlacedWord
 import os
@@ -27,10 +27,6 @@ def main(config, args):
     # TODO: search ==> Initialize Board (BoardLayout, Board) ==> Enter rack & find words
     if args.layoutfile is None or len(args.layoutfile) == 0:
         raise ValueError('search feature requires layoutfile to be set')
-    if args.boardfile is None or len(args.boardfile) == 0:
-        raise ValueError('search feature requires boardfile to be set')
-    if args.rack is None or len(args.rack) == 0:
-        raise ValueError('search feature requires rack to be set')
 
     do_use_layout_config = args.layoutfile[0] == '@'
     layout_rows = ( Util.get_rows_from_config(config[args.layoutfile[1:]])
@@ -38,15 +34,11 @@ def main(config, args):
                     else Util.get_rows_from_filename(args.layoutfile))
     layout = BoardLayout(layout_rows)
 
-    do_use_board_config = args.boardfile[0] == '@'
-    board_rows = ( Util.get_rows_from_config(config[args.boardfile[1:]])
-                   if do_use_board_config
-                   else Util.get_rows_from_filename(args.boardfile))
-    board = Board(layout=layout, rows=board_rows)
-
     if args.command == Command.SEARCH:
-        rack = args.rack
-
+        if args.boardfile is None or len(args.boardfile) == 0:
+            raise ValueError('search feature requires boardfile to be set')
+        if args.rack is None or len(args.rack) == 0:
+            raise ValueError('search feature requires rack to be set')
         if args.verbose:
             print('INFO: Layout:')
             layout.print()
@@ -55,6 +47,12 @@ def main(config, args):
             print(f'INFO: Rack: {rack}')
 
         gtree = GTree('/usr/share/dict/words')
+        do_use_board_config = args.boardfile[0] == '@'
+        board_rows = ( Util.get_rows_from_config(config[args.boardfile[1:]])
+                        if do_use_board_config
+                        else Util.get_rows_from_filename(args.boardfile))
+        board = Board(layout=layout, rows=board_rows)
+
         search = Search(gtree, board)
         moves = search.find_moves(rack)
         if moves:
@@ -70,10 +68,12 @@ def main(config, args):
         raise NotImplementedError('Experiment feature not yet implemented')
 
     elif args.command == Command.PLAYERS:
-        bag = Bag(config.letter_counts_scrabble_en)
-        log_filename = config['log_filename'] + str(os.getpid()) + '.log'
-        with Game(board, player_count, char2points, log_filename) as game:
-            game.play()
+        # bag = Bag(config['letter_counts_scrabble_en'])
+        print('Creating dictionary ...')
+        gtree = GTree('/usr/share/dict/words')
+        board = Board(layout, None)
+        game = Game(config, gtree, board)
+        game.play()
 
     elif args.command == Command.ML:  # Train computer strategy via ML
         # TODO: bag = ...
@@ -126,11 +126,10 @@ if __name__ == '__main__':
     parser_search.add_argument('-r', '--rack', help='Rack that contains letters to be used in search', default='etaoins')
 
     # Player args
-    players_group = parser_players.add_mutually_exclusive_group(required=True)
+    players_group = parser_players.add_argument_group(title='players command sub-args')
     parser_players.add_argument('--hh', nargs='?', dest='players_mode', const='hh', help='Human vs Human')
     parser_players.add_argument('--hc', nargs='?', dest='players_mode', const='hc', help='Human vs Computer')
     parser_players.add_argument('--cc', nargs='?', dest='players_mode', const='cc', help='Computer vs Computer')
-    parser_players.set_defaults(players_mode = 'hh')
 
     # TODO: Specify how players join and how their identity & connection info is obtained
     # TODO: Specify how input is obtained: keyboard/server:port/etc.

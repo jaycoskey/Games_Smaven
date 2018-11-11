@@ -2,6 +2,7 @@
 
 import unittest
 import yaml
+import sys
 
 
 from board import Board
@@ -129,7 +130,7 @@ class TestSearchState(unittest.TestCase):
 
     def test_is_next_cursor_letter(self, verbose=VERBOSE):
         if verbose:
-            print(f'\n\n===Test: {f.__code__.co_name} ===')
+            print(f'\n\n===Test: {get_function_name()} ===')
 
         config = TestSearchState.get_config()
         test_board_jay = Board(None, Util.get_rows_from_config(config['test_board_jay']))
@@ -160,7 +161,7 @@ class TestSearchState(unittest.TestCase):
 
     def test_next_cursor(self, verbose=VERBOSE):
         if verbose:
-            print(f'\n\n===Test: {f.__code__.co_name} ===')
+            print(f'\n\n===Test: {get_function_name()} ===')
 
         config = TestSearchState.get_config()
         test_board_jay = Board(None, Util.get_rows_from_config(config['test_board_jay']))
@@ -188,16 +189,16 @@ class TestSearchState(unittest.TestCase):
         rhs = [Square(0, 0), Square(0, 2), None, Square(1, 1)]
         assert(lhs == rhs)
 
-    def test_reverse(self):
+    def test_reverse(self, verbose=VERBOSE):
         if verbose:
-            print(f'\n\n===Test: {f.__code__.co_name} ===')
+            print(f'\n\n===Test: {get_function_name()} ===')
 
         config = TestSearchState.get_config()
         test_board_jay = Board(None, Util.get_rows_from_config(config['test_board_jay']))
 
     def test_update_blank_in_rack(self, verbose=VERBOSE):
         if verbose:
-            print(f'\n\n===Test: {f.__code__.co_name} ===')
+            print(f'\n\n===Test: {get_function_name()} ===')
 
         config = TestSearchState.get_config()
         test_board_jay = Board(None, Util.get_rows_from_config(config['test_board_jay']))
@@ -237,7 +238,7 @@ class TestSearchState(unittest.TestCase):
 
     def test_update_char_in_rack(self, verbose=VERBOSE):
         if verbose:
-            print(f'\n\n===Test: {f.__code__.co_name} ===')
+            print(f'\n\n===Test: {get_function_name()} ===')
 
         config = TestSearchState.get_config()
         test_board_jay = Board(None, Util.get_rows_from_config(config['test_board_jay']))
@@ -277,7 +278,7 @@ class TestSearchState(unittest.TestCase):
 
     def test_update_char_on_board(self, verbose=VERBOSE):
         if verbose:
-            print(f'\n\n===Test: {f.__code__.co_name} ===')
+            print(f'\n\n===Test: {get_function_name()} ===')
 
         config = TestSearchState.get_config()
         test_board_jay = Board(None, Util.get_rows_from_config(config['test_board_jay']))
@@ -318,6 +319,10 @@ class TestSearchState(unittest.TestCase):
         if verbose and ss != other:
             print(f'test_update_char_on_board: Unexpected inequality:\n\t==>{ss}\n\t   !=\n\t==>{other}')
         assert(ss == other)
+
+
+def get_function_name():
+    return sys._getframe(1).f_code.co_name
 
 
 if __name__ == '__main__':

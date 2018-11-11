@@ -5,8 +5,9 @@ introduction: |
     Welcome to WordSquareGame!
 board_layout: layout_scrabble
 dictionary_file: /usr/share/dict/words
-letter_counts: letter_counts_scrabble_en
-letter_points: letter_points_scrabble_en
+logfile_basename: smaven
+counts2chars: letter_counts_scrabble_en
+points2chars: letter_points_scrabble_en
 player_colors:
     - 1: "aqua"
     - 2: "tangerine"
@@ -15,6 +16,8 @@ player_names:
     - 1: "Amy"
     - 1: "Bob"
 rack_size: 7
+bingo_points: 50
+config_hrule1: ########## ########## ########## ########## ########## ##########
 layout_scrabble: |
     T..d...T...d..T
     .D...t...t...D.
@@ -59,44 +62,57 @@ layout_wwf_challenge: |
     T.d.d.d.d.T
     .D...D...D.
     t.T.....T.t
+config_hrule2: ########## ########## ########## ########## ########## ##########
 letter_counts_scrabble_en:
-    - 1: "kjqxz"
-    - 2: " bcfhmpvwy"
-    - 3: "g"
-    - 4: "dlsu"
-    - 6: "nrt"
-    - 8: "o"
-    - 9: "ai"
-    - 12: "e"
+    1: "kjqxz"
+    2: "_bcfhmpvwy"
+    3: "g"
+    4: "dlsu"
+    6: "nrt"
+    8: "o"
+    9: "ai"
+    12: "e"
 letter_counts_wwf_en:
-    - 1: "jkqxz"
-    - 2: " bcfmpvwy"
-    - 3: "g"
-    - 4: "hlu"
-    - 5: "s"
-    - 6: "r"
-    - 7: "t"
-    - 8: "io"
-    - 9: "a"
-    - 13: "e"
+    1: "jkqxz"
+    2: "_bcfmpvwy"
+    3: "g"
+    4: "hlu"
+    5: "s"
+    6: "r"
+    7: "t"
+    8: "io"
+    9: "a"
+    13: "e"
 letter_points_scrabble_en:
-    - 0: " "
-    - 1: "aeilnorstu"
-    - 2: "dg"
-    - 3: "bcmp"
-    - 4: "fhvwy"
-    - 5: "k"
-    - 8: "jx"
-    - 10: "qz"
+    0: "_"
+    1: "aeilnorstu"
+    2: "dg"
+    3: "bcmp"
+    4: "fhvwy"
+    5: "k"
+    8: "jx"
+    10: "qz"
 letter_points_wwf_en:
-    - 0: " "
-    - 1: "aeiorst"
-    - 2: "dlnu"
-    - 3: "ghy"
-    - 4: "bcfmpw"
-    - 5: "kv"
-    - 8: "x"
-    - 10: "jqz"
+    0: "_"
+    1: "aeiorst"
+    2: "dlnu"
+    3: "ghy"
+    4: "bcfmpw"
+    5: "kv"
+    8: "x"
+    10: "jqz"
+config_hrule3: ########## ########## ########## ########## ########## ##########
+help_command_syntax: |
+    Command syntax:
+        help                  - Show this help message
+        show                  - Show the game state again
+        across <word> <x> <y> - Place a word on the board, starting at <x>, <y>
+        down   <word> <x> <y> - Form one or more words on the board
+            Note: (0, 0) represents the upper-left corner
+        swap <letters>        - Swap letters from your rack with ones in the bag
+        pass                  - Pass on this round
+        resign                - Accept defeat; give your opponent the win
+config_hrule4: ########## ########## ########## ########## ########## ##########
 board_scrabble_test1: |
     ...............
     ...............

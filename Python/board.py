@@ -19,29 +19,47 @@ class BoardSquareType(Enum):
 class Board:
     CHAR_EMPTY = '.'
 
-    def __init__(self, layout:'BoardLayout', rows:List[str]=None):
-        def config2obj(c):
+    def __init__(self, layout:'BoardLayout', rows:List[str]=None)->List[List[str]]:
+        def config2char(c):
             return Board.CHAR_EMPTY if c == '.' else c
 
-        is_rectangle = all([len(row) == len(rows[0]) for row in rows])
-        assert(is_rectangle)
-
-        self.height = len(rows)
-        self.width = len(rows[0])
+        if layout is None and rows is None:
+            raise ValueError('Error in Board initialization: layout and board parameters cannot both be None')
 
         if layout is None:
             # For testing: If layout is None, then create a blank layout from rows.
-            self.layout = BoardLayout([['.' for c in row] for row in rows])
+            self.layout = BoardLayout([[Board.CHAR_EMPTY for c in row] for row in rows])
         else:
-            self.layout: BoardLayout = layout
-            assert(self.height == self.layout.height)
-            assert(self.width == self.layout.width)
+            # is_layout_rectangle = all([len(layout) == len(layout[0]) for row in rows])
+            # assert(is_layout_rectangle)
+            self.layout = layout
 
-        self.letters: List[List[str]] = [[config2obj(c) for c in row] for row in rows]
+        if rows is None:
+            self.letters = [[Board.CHAR_EMPTY for c in row] for row in self.layout.letters]
+        else:
+            is_board_rectangle = all([len(row) == len(rows[0]) for row in rows])
+            assert(is_board_rectangle)
+            self.letters = [[config2char(c) for c in row] for row in rows]
+
+        self.height = len(self.letters)
+        self.width = len(self.letters[0])
+        assert(self.height == self.layout.height)
+        assert(self.width == self.layout.width)
 
     def __getitem__(self, square):
         return self.letters[square.y][square.x]
 
+    def __setitem__(self, square, char):
+        self.letters[square.y][square.x] = char
+
+    def __str__(self, compact=False):
+        if compact:
+            return '\t' + '\n\t'.join([''.join(row) for row in self.letters])
+        else:
+            header_footer = '\t' + ' ' * 4 + (''.join([str(k) for k in range(10)]) * 5)[:self.width]
+            rows = [''.join(row) for row in self.letters]
+            body = '\n'.join([f'\t{k:3d} {row} {k:3d}' for k, row in enumerate(rows)])
+            return '{}\n{}\n{}'.format(header_footer, body, header_footer)
 
     def find_moves(self, gtree, rack):
         return gtree.find_moves(self, rack)
@@ -77,13 +95,13 @@ class Board:
     def is_square_on_board(self, s):
         return (0 <= s.x < self.width) and (0 <= s.y < self.height)
 
-    def move2points(self, move, rack_size, bingo_points):
+    def move2points(self, config, move):
         square2pl = {Square(pl.x, pl.y): pl for pl in move.placed_letters}
         points = self.points_word(square2pl, move.primary_word)
         for secondary_word in move.secondary_words:
             points += self.word2points(square2pl, move.secondary_word)
-        if len(move.placed_letters) == rack_size:
-            points += bingo_points
+        if len(move.placed_letters) == int(config['rack_size']):
+            points += int(config['bingo_points'])
         return points
 
     def print(self):
@@ -142,11 +160,11 @@ class BoardLayout:
                     , 'T': BoardSquareType.TRIPLE_WORD }
     bstype2char = Util.reversed_dict(char2bstype)
     def __init__(self, rows):
-        self.layout = [[BoardLayout.char2bstype[c] for c in row] for row in rows]
-        is_rectangle = all([len(row) == len(self.layout[0]) for row in self.layout])
+        self.letters = [[BoardLayout.char2bstype[c] for c in row] for row in rows]
+        is_rectangle = all([len(row) == len(self.letters[0]) for row in self.letters])
         assert(is_rectangle)
-        self.height = len(self.layout)
-        self.width = len(self.layout[0])
+        self.height = len(self.letters)
+        self.width = len(self.letters[0])
 
     def print(self):
         for row in self.layout:
