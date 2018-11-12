@@ -54,7 +54,7 @@ class TestSearch(unittest.TestCase):
             else:
                 print(f'\t<None>')
 
-        board = Board(layout=None, rows=config_board)
+        board = Board(config_test, layout=None, rows=config_board)
         gtree = GTree()
         gtree.add_wordlist(config_dictionary)
         search = Search(gtree, board)
@@ -133,7 +133,7 @@ class TestSearchState(unittest.TestCase):
             print(f'\n\n===Test: {get_function_name()} ===')
 
         config = TestSearchState.get_config()
-        test_board_jay = Board(None, Util.get_rows_from_config(config['test_board_jay']))
+        test_board_jay = Board(config, None, Util.get_rows_from_config(config['test_board_jay']))
 
         dummy_move_acc = []
         dummy_node = None
@@ -164,7 +164,7 @@ class TestSearchState(unittest.TestCase):
             print(f'\n\n===Test: {get_function_name()} ===')
 
         config = TestSearchState.get_config()
-        test_board_jay = Board(None, Util.get_rows_from_config(config['test_board_jay']))
+        test_board_jay = Board(config, None, Util.get_rows_from_config(config['test_board_jay']))
 
         dummy_move_acc = []
         dummy_node = None
@@ -194,14 +194,14 @@ class TestSearchState(unittest.TestCase):
             print(f'\n\n===Test: {get_function_name()} ===')
 
         config = TestSearchState.get_config()
-        test_board_jay = Board(None, Util.get_rows_from_config(config['test_board_jay']))
+        test_board_jay = Board(config, None, Util.get_rows_from_config(config['test_board_jay']))
 
     def test_update_blank_in_rack(self, verbose=VERBOSE):
         if verbose:
             print(f'\n\n===Test: {get_function_name()} ===')
 
         config = TestSearchState.get_config()
-        test_board_jay = Board(None, Util.get_rows_from_config(config['test_board_jay']))
+        test_board_jay = Board(config, None, Util.get_rows_from_config(config['test_board_jay']))
 
         gtree = GTree()
         gtree.add_word('jay')
@@ -241,7 +241,7 @@ class TestSearchState(unittest.TestCase):
             print(f'\n\n===Test: {get_function_name()} ===')
 
         config = TestSearchState.get_config()
-        test_board_jay = Board(None, Util.get_rows_from_config(config['test_board_jay']))
+        test_board_jay = Board(config, None, Util.get_rows_from_config(config['test_board_jay']))
 
         gtree = GTree()
         gtree.add_word('jay')
@@ -281,7 +281,7 @@ class TestSearchState(unittest.TestCase):
             print(f'\n\n===Test: {get_function_name()} ===')
 
         config = TestSearchState.get_config()
-        test_board_jay = Board(None, Util.get_rows_from_config(config['test_board_jay']))
+        test_board_jay = Board(config, None, Util.get_rows_from_config(config['test_board_jay']))
 
         gtree = GTree()
         gtree.add_word('jay')

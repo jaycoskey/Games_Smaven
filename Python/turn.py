@@ -6,7 +6,7 @@ from move import Move
 
 
 class TurnType(Enum):
-    MOVE = auto()
+    PLACE = auto()
     SWAP = auto()
     PASS = auto()
     RESIGN = auto()
@@ -16,7 +16,7 @@ class Turn:
     next_turn_num = 1
 
     def __init__(self, player_id:int, turn_type:TurnType, points:int, move:Move=None, drawn:str=None, discarded:str=None):
-        if turn_type == TurnType.MOVE:
+        if turn_type == TurnType.PLACE:
             assert(move and len(drawn) > 0 and not discarded)
         elif turn_type == TurnType.SWAP:
             assert(not move and len(drawn) > 0 and len(discarded) > 0 and len(drawn) == len(discarded))

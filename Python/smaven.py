@@ -5,8 +5,10 @@ import string
 import sys
 import yaml
 
+
+from bag import Bag
 from board import Board, BoardLayout
-from game import Bag, Game
+from game import Game
 from gtree import GTree
 from move import Move, PlacedLetter, PlacedWord
 import os
@@ -33,28 +35,26 @@ def main(config, args):
                     if do_use_layout_config
                     else Util.get_rows_from_filename(args.layoutfile))
     layout = BoardLayout(layout_rows)
-
     if args.command == Command.SEARCH:
         if args.boardfile is None or len(args.boardfile) == 0:
             raise ValueError('search feature requires boardfile to be set')
         if args.rack is None or len(args.rack) == 0:
             raise ValueError('search feature requires rack to be set')
-        if args.verbose:
-            print('INFO: Layout:')
-            layout.print()
-            print('INFO: Board:')
-            board.print()
-            print(f'INFO: Rack: {rack}')
 
         gtree = GTree('/usr/share/dict/words')
         do_use_board_config = args.boardfile[0] == '@'
         board_rows = ( Util.get_rows_from_config(config[args.boardfile[1:]])
                         if do_use_board_config
                         else Util.get_rows_from_filename(args.boardfile))
-        board = Board(layout=layout, rows=board_rows)
+        board = Board(config, layout=layout, rows=board_rows)
+
+        if args.verbose:
+            print(f'Layout:\n{layout}')
+            print(f'Board:\n{board}')
+            print(f'Rack: {args.rack}')
 
         search = Search(gtree, board)
-        moves = search.find_moves(rack)
+        moves = search.find_moves(args.rack)
         if moves:
             for move in moves:
                 print(f'Move found: {move}')
@@ -68,10 +68,8 @@ def main(config, args):
         raise NotImplementedError('Experiment feature not yet implemented')
 
     elif args.command == Command.PLAYERS:
-        # bag = Bag(config['letter_counts_scrabble_en'])
-        print('Creating dictionary ...')
         gtree = GTree('/usr/share/dict/words')
-        board = Board(layout, None)
+        board = Board(config, layout, None)
         game = Game(config, gtree, board)
         game.play()
 

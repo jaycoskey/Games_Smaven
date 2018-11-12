@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
+
+from bag import Bag
 from board import Board
 from board_direction import BoardDirection
-from move import PlacedLetter
-from game import Bag
+from move import Move, PlacedLetter
 from gtree import GNode
+from typing import Iterable, List
 from util import Square, Util
 
 
@@ -14,7 +16,7 @@ class Search:
         self.gtree = gtree
         self.board = board
 
-    def find_moves(self, rack):
+    def find_moves(self, rack)->List[Move]:
         result = []
         for hook in self.board.hooks():
             for bdir in [BoardDirection.LEFT, BoardDirection.UP]:
@@ -22,12 +24,12 @@ class Search:
                 result.extend(found_hook_bdir)
         return result
 
-    def find_moves_hook_bdir(self, hook, bdir, rack):
+    def find_moves_hook_bdir(self, hook, bdir, rack)->Iterable[Move]:
         for node in self.gtree.root.children:
             ss = SearchState([], node, hook, bdir, rack)
             yield from find_moves_ss(ss)
 
-    def find_moves_ss(self, ss):
+    def find_moves_ss(self, ss)->Iterable[Move]:
         if ss.node.char == GNode.CHAR_EOW:
             if not ss.is_next_square_letter(self.board):
                 yield move_acc.copy()
@@ -47,12 +49,21 @@ class Search:
                 if is_blank_in_rack:
                     yield from self.find_moves_ss(ss.update_blank_in_rack(board))
 
-    def get_secondary_words(self, gtree, board, placed_letters, primary_word):
-        # TODO: Get direction of primary_word
+    def get_secondary_words(self, placed_letters, primary_word, rack, do_update_move_acc=True):
+        sq_beg = primary_word.square_begin
+        sq_end = primary_word.square_end
+        primary_bdir = BoardDirection.LEFT if sq_beg.y == sq_end.y else BoardDirection.UP
+
         result = []
-        ss = SearchState(...)
         for pl in placed_letters:
-            sw = ss.get_secondary_word(gtree, board)
+            if pl.char not in gtree.root.children:
+                continue
+            if do_update_move_acc:
+                move_acc = Move(placed_letters, primary_word, [])
+            node = gtree.root.children[pl.char]
+            cursor = pl.square
+            ss = SearchState(move_acc, node, cursor, primary_bdir, rack)
+            sw = ss.get_secondary_word(self.gtree, self.board)
             if sw:
                 result.append(sw)
         return result

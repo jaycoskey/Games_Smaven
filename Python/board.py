@@ -19,11 +19,12 @@ class BoardSquareType(Enum):
 class Board:
     CHAR_EMPTY = '.'
 
-    def __init__(self, layout:'BoardLayout', rows:List[str]=None)->List[List[str]]:
-        def config2char(c):
+    def __init__(self, config, layout, rows:List[str]=None)->List[List[str]]:
+        def board2char(c):
             return Board.CHAR_EMPTY if c == '.' else c
 
-        if layout is None and rows is None:
+        self.config = config
+        if (layout is None) and (rows is None):
             raise ValueError('Error in Board initialization: layout and board parameters cannot both be None')
 
         if layout is None:
@@ -39,7 +40,7 @@ class Board:
         else:
             is_board_rectangle = all([len(row) == len(rows[0]) for row in rows])
             assert(is_board_rectangle)
-            self.letters = [[config2char(c) for c in row] for row in rows]
+            self.letters = [[board2char(c) for c in row] for row in rows]
 
         self.height = len(self.letters)
         self.width = len(self.letters[0])
@@ -95,13 +96,13 @@ class Board:
     def is_square_on_board(self, s):
         return (0 <= s.x < self.width) and (0 <= s.y < self.height)
 
-    def move2points(self, config, move):
+    def move2points(self, move):
         square2pl = {Square(pl.x, pl.y): pl for pl in move.placed_letters}
-        points = self.points_word(square2pl, move.primary_word)
+        points = self.word2points(square2pl, move.primary_word)
         for secondary_word in move.secondary_words:
             points += self.word2points(square2pl, move.secondary_word)
-        if len(move.placed_letters) == int(config['rack_size']):
-            points += int(config['bingo_points'])
+        if len(move.placed_letters) == int(self.config['rack_size']):
+            points += int(self.config['bingo_points'])
         return points
 
     def print(self):
@@ -129,8 +130,8 @@ class Board:
         points = 0
         word_multiplier = 1
         for sq in pw.squares():
+            # Letter is being placed on board
             if sq in square2pl:
-                # Letter is being placed on board
                 pl = square2pl[sq]
                 if pl.char.islower():
                     bst = self.layout[sq.y][sq.x]
@@ -140,14 +141,14 @@ class Board:
                     elif bst == BoardSquareType.TRIPLE_LETTER:
                         letter_multipler = 3
                     elif bst == BoardSquareType.DOUBLE_WORD:
-                        word_multipler *= 2
+                        word_multiplier *= 2
                     elif bst == BoardSquareType.TRIPLE_WORD:
-                        word_multipler *= 3
+                        word_multiplier *= 3
                 points += self.game.char2points[pl.char] * letter_multiplier
-            elif pl.char.islower():
-                # Letter is already on board
+            elif self[sq].islower():
+                # Letter is non-blank, and already on board
                 points += self.game.char2points[self[sq]]
-        points *= word_multipler
+        points *= word_multiplier
         return points
 
 
@@ -166,6 +167,15 @@ class BoardLayout:
         self.height = len(self.letters)
         self.width = len(self.letters[0])
 
-    def print(self):
-        for row in self.layout:
-            print('.'.join([BoardLayout.bstype2char[c] for c in row]))
+    def __str__(self, compact=False):
+        if compact:
+            return ('\t'
+                    + '\n\t'.join(
+                        [ ''.join([BoardLayout.bstype2char[x] for x in row]) for row in self.letters ]
+                        )
+                    )
+        else:
+            header_footer = '\t' + ' ' * 4 + (''.join([str(k) for k in range(10)]) * 5)[:self.width]
+            rows = [ ''.join([BoardLayout.bstype2char[x] for x in row]) for row in self.letters ]
+            body = '\n'.join([f'\t{k:3d} {row} {k:3d}' for k, row in enumerate(rows)])
+            return '{}\n{}\n{}'.format(header_footer, body, header_footer)

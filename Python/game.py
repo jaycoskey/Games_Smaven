@@ -6,39 +6,10 @@ from random import randint
 import os
 
 
+from bag import Bag
 from player import Player
-
-
-class Bag:
-    CHAR_BLANK = ' '
-    DRAWN_NONE = ''
-    DRAWN_UNKNOWN = '?'
-    DISCARDED_NONE = ''
-
-    def __init__(self, count2chars):
-        char2count = {}
-        for count in count2chars:
-            for char in count2chars[count]:
-                char2count[char] = count
-        self.letters = ''.join([c * char2count[c] for c in char2count])
-
-    def __len__(self):
-        return len(self.letters)
-
-    def add(self, chars):
-        self.letters += chars
-
-    def draw(self, count):
-        if count > len(self.letters):
-            raise ValueError(f'Not enough letters: {len(self.letters)} available, but {count} requested')
-
-        result = []
-        for _ in range(count):
-            pos = randint(0, len(self.letters) - 1)
-            result.append(self.letters[pos])
-            end = len(self.letters)
-            self.letters = self.letters[0: pos] + self.letters[pos + 1: end]
-        return result
+from turn import TurnType
+from util import Util
 
 
 class GameEndType(Enum):
@@ -84,6 +55,7 @@ class Game:
 
         self._init_players(self.num_players)
 
+
     def _get_players(self, num_players):
         result = []
         for player_id in range(1, num_players + 1):
@@ -102,6 +74,7 @@ class Game:
 
         for p in players:
             p.rack = self.bag.draw(7)
+
 
     def exit(self):
         # Clean up resources, notify players, etc.
@@ -127,21 +100,21 @@ class Game:
             self.cur_player_id = self.pid2next[self.cur_player_id]
 
     def turn_execute(self, turn):
-        player = self.get_player(turn.player_id)
+        player = self.pid2player[turn.player_id]
         if turn.turn_type == TurnType.PLACE:
             self.was_prev_turn_pass = False
             placed_chars = ''.join([pl.char for pl in turn.move.placed_letters])
-            player.rack = Util.remove_chars(rack, placed_chars)
+            player.rack = Util.remove_chars(player.rack, placed_chars)
             for pl in turn.move.placed_letters:
                 board[pl.square] = pl.char
-            player.score += board.move2points(config, turn.move)
-            drawn_letters = bag.draw(len(placed_letters))
+            player.score += self.board.move2points(turn.move)
+            drawn_letters = self.bag.draw(len(placed_chars))
 
         elif turn.turn_type == TurnType.SWAP:
             self.was_prev_turn_pass = False
             player.rack = Util.remove_chars(rack, discarded_letters)
-            bag.add(turn.discarded_letters)
-            drawn_chars = bag.draw(len(discarded_letters))
+            self.bag.add(turn.discarded_letters)
+            drawn_chars = self.bag.draw(len(discarded_letters))
             player.rack += drawn_chars
 
         elif turn.turn_type == TurnType.PASS:
