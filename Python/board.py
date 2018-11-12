@@ -105,12 +105,6 @@ class Board:
             points += int(self.config['bingo_points'])
         return points
 
-    def print(self):
-        for row in self.letters:
-            for c in row:
-                print(c, end='')
-            print()
-
     def squares(self):
         for y in range(self.layout.height):
             for x in range(self.layout.width):
