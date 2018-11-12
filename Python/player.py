@@ -5,7 +5,6 @@ from enum import auto, Enum
 
 from bag import Bag
 from board_direction import BoardDirection
-import game
 from move import Move, PlacedWord
 from search import Search
 from turn import Turn, TurnType
@@ -133,12 +132,12 @@ class Player:
                 if len(args) > 1:
                     print(f'Invalid move syntax: The swap command does not take any additional information')
                 # Note: Player can always pass
-                return Turn(TurnType.PASS, None, Bag.DRAWN_NONE, game.Game.DISCARDED_NONE)
+                return Turn(self.player_id, TurnType.PASS, 0, None, Bag.DRAWN_NONE, Bag.DISCARDED_NONE)
             elif cmd == 'resign':
                 if len(args) > 1:
                     print(f'Invalid move syntax: The resign command does not take any additional information')
                 # Note: Player can always resign
-                return Turn(TurnType.RESIGN, None, Bag.DRAWN_NONE, game.Game.DISCARDED_NONE)
+                return Turn(self.player_id, TurnType.RESIGN, 0, None, Bag.DRAWN_NONE, Bag.DISCARDED_NONE)
 
             print(Util.tabify(self.game.config['help_command_syntax']))
 
