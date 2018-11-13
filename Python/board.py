@@ -3,10 +3,10 @@
 from enum import Enum, auto
 from move import PlacedWord
 from typing import Dict, List
-from util import Square, Util
+from util import Cell, Util
 
 
-class BoardSquareType(Enum):
+class BoardCellType(Enum):
     BLANK = auto()
     CENTER = auto()
     DOUBLE_LETTER = auto()
@@ -47,11 +47,11 @@ class Board:
         assert(self.height == self.layout.height)
         assert(self.width == self.layout.width)
 
-    def __getitem__(self, square):
-        return self.letters[square.y][square.x]
+    def __getitem__(self, cell):
+        return self.letters[cell.y][cell.x]
 
-    def __setitem__(self, square, char):
-        self.letters[square.y][square.x] = char
+    def __setitem__(self, cell, char):
+        self.letters[cell.y][cell.x] = char
 
     def __str__(self, compact=False):
         if compact:
@@ -67,18 +67,18 @@ class Board:
 
     # TODO: More efficient general solution? Set intersection? More efficient special cases (e.g., sparse board)?
     def hooks(self):
-        """Return empty Squares adjacent to ones already filled. (If board is empty, return INIT_HOOKS.)"""
+        """Return empty Cells adjacent to ones already filled. (If board is empty, return INIT_HOOKS.)"""
         if self.is_empty():
-            return [Square(int(layout.width / 2), int(layout.height / 2))]
+            return [Cell(int(layout.width / 2), int(layout.height / 2))]
 
-        filled = set([s for s in self.squares_filled()])
+        filled = set([s for s in self.cells_filled()])
         if not filled:  # If first player passed, for some reason
-            return [Square(int(layout.width / 2), int(layout.height / 2))]
+            return [Cell(int(layout.width / 2), int(layout.height / 2))]
 
         hooks = []
-        for s in self.squares():
+        for s in self.cells():
             if self[s] is None:
-                for adj in self.squares_adjacent(s):
+                for adj in self.cells_adjacent(s):
                     if adj in s:
                         hooks.append(adj)
         return hooks
@@ -86,73 +86,73 @@ class Board:
     # TODO: Improve efficiency. Unless undo is implemented, is_empty can be cached.
     #       Or hooks() could just be called with an is_board_empty flag.
     def is_empty(self):
-        return all([ all([c == BoardSquareType.BLANK for c in row])
+        return all([ all([c == BoardCellType.BLANK for c in row])
                         for row in self.letters
                         ])
 
-    def is_square_empty(self, s):
+    def is_cell_empty(self, s):
         return self[s] != Board.CHAR_EMPTY
 
-    def is_square_on_board(self, s):
+    def is_cell_on_board(self, s):
         return (0 <= s.x < self.width) and (0 <= s.y < self.height)
 
     def move2points(self, move):
-        square2pl = {Square(pl.x, pl.y): pl for pl in move.placed_letters}
-        points = self.word2points(square2pl, move.primary_word)
+        cell2pl = {Cell(pl.x, pl.y): pl for pl in move.placed_letters}
+        points = self.word2points(cell2pl, move.primary_word)
         for secondary_word in move.secondary_words:
-            points += self.word2points(square2pl, move.secondary_word)
+            points += self.word2points(cell2pl, move.secondary_word)
         if len(move.placed_letters) == int(self.config['rack_size']):
             points += int(self.config['bingo_points'])
         return points
 
-    def squares(self):
+    def cells(self):
         for y in range(self.layout.height):
             for x in range(self.layout.width):
-                yield Square(x, y)
+                yield Cell(x, y)
 
-    def squares_adjacent(self, square):
-        for x in range(min(0, square.x - 1), max(self.layout.width - 1, square.x + 1) + 1):
-            for y in range(min(0, square.y - 1), max(self.layout.height - 1, square.y + 1) + 1):
-                yield Square(x, y)
+    def cells_adjacent(self, cell):
+        for x in range(min(0, cell.x - 1), max(self.layout.width - 1, cell.x + 1) + 1):
+            for y in range(min(0, cell.y - 1), max(self.layout.height - 1, cell.y + 1) + 1):
+                yield Cell(x, y)
 
-    def squares_filled(self):
-        for s in self.squares():
+    def cells_filled(self):
+        for s in self.cells():
             if self[s] is not None:
                 yield s
 
-    def word2points(self, square2pl, pw:PlacedWord):
+    def word2points(self, cell2pl, pw:PlacedWord):
         points = 0
         word_multiplier = 1
-        for sq in pw.squares():
+        for cell in pw.cells():
             # Letter is being placed on board
-            if sq in square2pl:
-                pl = square2pl[sq]
+            if cell in cell2pl:
+                pl = cell2pl[cell]
                 if pl.char.islower():
-                    bst = self.layout[sq.y][sq.x]
+                    bst = self.layout[cell.y][cell.x]
                     letter_multipler = 1
-                    if bst == BoardSquareType.DOUBLE_LETTER:
+                    if bst == BoardCellType.DOUBLE_LETTER:
                         letter_multipler = 2
-                    elif bst == BoardSquareType.TRIPLE_LETTER:
+                    elif bst == BoardCellType.TRIPLE_LETTER:
                         letter_multipler = 3
-                    elif bst == BoardSquareType.DOUBLE_WORD:
+                    elif bst == BoardCellType.DOUBLE_WORD:
                         word_multiplier *= 2
-                    elif bst == BoardSquareType.TRIPLE_WORD:
+                    elif bst == BoardCellType.TRIPLE_WORD:
                         word_multiplier *= 3
                 points += self.game.char2points[pl.char] * letter_multiplier
-            elif self[sq].islower():
+            elif self[cell].islower():
                 # Letter is non-blank, and already on board
-                points += self.game.char2points[self[sq]]
+                points += self.game.char2points[self[cell]]
         points *= word_multiplier
         return points
 
 
 class BoardLayout:
-    char2bstype = { '.': BoardSquareType.BLANK
-                    , '*': BoardSquareType.CENTER
-                    , 'd': BoardSquareType.DOUBLE_LETTER
-                    , 'D': BoardSquareType.DOUBLE_WORD
-                    , 't': BoardSquareType.TRIPLE_LETTER
-                    , 'T': BoardSquareType.TRIPLE_WORD }
+    char2bstype = { '.': BoardCellType.BLANK
+                    , '*': BoardCellType.CENTER
+                    , 'd': BoardCellType.DOUBLE_LETTER
+                    , 'D': BoardCellType.DOUBLE_WORD
+                    , 't': BoardCellType.TRIPLE_LETTER
+                    , 'T': BoardCellType.TRIPLE_WORD }
     bstype2char = Util.reversed_dict(char2bstype)
     def __init__(self, rows):
         self.letters = [[BoardLayout.char2bstype[c] for c in row] for row in rows]

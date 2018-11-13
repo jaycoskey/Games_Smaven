@@ -8,7 +8,7 @@ from board_direction import BoardDirection
 from move import Move, PlacedWord
 from search import Search
 from turn import Turn, TurnType
-from util import Square, Util
+from util import Cell, Util
 
 
 # TODO: Replace both turn_get() and turn_report() with reference to GameCommunication static methods
@@ -66,20 +66,20 @@ class Player:
                     break
 
                 bdir =  BoardDirection.RIGHT if cmd == 'across' else BoardDirection.DOWN
-                square_begin = Square(beg_x, beg_y)
-                square_end = Square(beg_x, beg_y)
+                cell_begin = Cell(beg_x, beg_y)
+                cell_end = Cell(beg_x, beg_y)
 
                 placed_chars = ''
                 placed_letters = []
 
-                if self.game.board.is_square_empty(square_end):
-                    placed_letters.append(PlacedLetter(square_end, w[0]))
+                if self.game.board.is_cell_empty(cell_end):
+                    placed_letters.append(PlacedLetter(cell_end, w[0]))
 
                 for k in range(1, len(w)):
-                    square_end = Util.add_sq_bdir(square_end, bdir)
-                    if self.game.board.is_square_empty(square_end):
+                    cell_end = Util.add_cell_bdir(cell_end, bdir)
+                    if self.game.board.is_cell_empty(cell_end):
                         placed_chars += w[k]
-                        placed_letters.append(PlacedLetter(square_end, w[k]))
+                        placed_letters.append(PlacedLetter(cell_end, w[k]))
 
                 do_reject_move = False
                 if not Util.is_subset(placed_chars, self.rack):
@@ -96,7 +96,7 @@ class Player:
                     print(f'Invalid move: Word entered is not in the game dictionary')
                     do_reject_move = True
                 search = Search(self.game.gtree, self.game.board)
-                placed_word = PlacedWord(square_begin, square_end, w)
+                placed_word = PlacedWord(cell_begin, cell_end, w)
                 secondary_words = search.get_secondary_words( placed_letters , placed_word, self.rack, False)
                 for sw in secondary_words:
                     if not self.game.gtree.has_word(sw):
@@ -105,12 +105,12 @@ class Player:
                 if do_reject_move:
                     raise ValueError('Internal error: Did not exit turn input loop on input error')
 
-                square_begin = Square(beg_x, beg_y)
+                cell_begin = Cell(beg_x, beg_y)
                 if cmd == 'across':
-                    square_end = Square(beg_x + len(w) - 1, beg_y)
+                    cell_end = Cell(beg_x + len(w) - 1, beg_y)
                 else:  # cmd == 'down'
-                    square_end = Square(beg_x, beg_y + len(w) - 1)
-                primary_word = PlacedWord(square_begin, square_end, w)
+                    cell_end = Cell(beg_x, beg_y + len(w) - 1)
+                primary_word = PlacedWord(cell_begin, cell_end, w)
                 move = Move(placed_letters, primary_word, secondary_words)
                 return Turn(self.player_id
                             , TurnType.PLACE

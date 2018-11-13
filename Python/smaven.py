@@ -95,7 +95,7 @@ if __name__ == '__main__':
     # u:undo-enabled?  v:verbose w:weightfile (ml)?  x:              y:
     # z:
     #
-    prog_description = 'Toolbox for word square games, such as Scrabble and Words With Friends'
+    prog_description = 'Toolbox for word games, such as Scrabble and Words With Friends'
     parser = argparse.ArgumentParser(prog=sys.argv[0], description=prog_description)
 
     parser.add_argument('-c', '--configfile'

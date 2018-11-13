@@ -16,6 +16,7 @@ class Turn:
     next_turn_num = 1
 
     def __init__(self, player_id:int, turn_type:TurnType, points:int, move:Move=None, drawn:str=None, discarded:str=None):
+        # print(f'INFO: Turn(): player_id={player_id}, turn_type={turn_type}, points={points}, move={move}, drawn={drawn}, discarded={discarded}')
         if turn_type == TurnType.PLACE:
             assert(move and len(drawn) > 0 and not discarded)
         elif turn_type == TurnType.SWAP:

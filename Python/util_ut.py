@@ -4,24 +4,24 @@ import unittest
 
 
 from board_direction import BoardDirection
-from util import Square, Util
+from util import Cell, Util
 
 
 class TestUtil(unittest.TestCase):
-    def test_add_sq_bdir(self):
-        before_sq = Square(2, 2)
+    def test_add_cell_bdir(self):
+        before_cell = Cell(2, 2)
         bdir = BoardDirection.RIGHT
-        after_sq = Util.add_sq_bdir(before_sq, bdir)
-        expected_sq = Square(3, 2)
-        assert(after_sq == expected_sq)
+        after_cell = Util.add_cell_bdir(before_cell, bdir)
+        expected_cell = Cell(3, 2)
+        assert(after_cell == expected_cell)
 
-    def test_do_rows_form_square(self):
-        rows_square = ['1234', '1234', '1234', '1234']
-        rows_non_square1 = ['1234', '1234']
-        rows_non_square2 = ['1234', '123', '12', '1']
-        assert(Util.do_rows_form_square(rows_square))
-        assert(not Util.do_rows_form_square(rows_non_square1))
-        assert(not Util.do_rows_form_square(rows_non_square2))
+    def test_do_rows_form_cell(self):
+        rows_cell = ['1234', '1234', '1234', '1234']
+        rows_non_cell1 = ['1234', '1234']
+        rows_non_cell2 = ['1234', '123', '12', '1']
+        assert(Util.do_rows_form_cell(rows_cell))
+        assert(not Util.do_rows_form_cell(rows_non_cell1))
+        assert(not Util.do_rows_form_cell(rows_non_cell2))
 
     # TODO: def test_get_rows_from_config(self):  # cfg
 
@@ -50,7 +50,7 @@ class TestUtil(unittest.TestCase):
     def test_reversed_dict(self):
         assert(Util.reversed_dict({'a':1, 'b':2, 'c':3}) == {1:'a', 2:'b', 3:'c'})
 
-    # TODO: def test_sq2str(self):  # square
+    # TODO: def test_cell2str(self):  # cell
 
     def test_updated_str_with_char(self):  # s, bdir, c
         assert(Util.updated_str_with_char('use', BoardDirection.LEFT, 'f') == 'fuse')

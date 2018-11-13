@@ -10,7 +10,7 @@ from board_direction import BoardDirection
 from gtree import GNode, GTree
 from move import Move, PlacedLetter, PlacedWord
 from search import Search, SearchState
-from util import Square, Util
+from util import Cell, Util
 
 
 class TestSearch(unittest.TestCase):
@@ -139,7 +139,7 @@ class TestSearchState(unittest.TestCase):
         dummy_node = None
         dummy_bdir = BoardDirection.NO_DIR
         dummy_rack = ''
-        ss = SearchState(dummy_move_acc, dummy_node, Square(1, 0), dummy_bdir, '')
+        ss = SearchState(dummy_move_acc, dummy_node, Cell(1, 0), dummy_bdir, '')
 
         ss.bdir = BoardDirection.LEFT
         is_left_char = ss.is_next_cursor_letter(test_board_jay)
@@ -168,7 +168,7 @@ class TestSearchState(unittest.TestCase):
 
         dummy_move_acc = []
         dummy_node = None
-        cursor = Square(1, 0)
+        cursor = Cell(1, 0)
         dummy_bdir = BoardDirection.NO_DIR
         dummy_rack = ''
         ss = SearchState(dummy_move_acc, dummy_node, cursor, dummy_bdir, dummy_rack)
@@ -186,7 +186,7 @@ class TestSearchState(unittest.TestCase):
         down = ss.next_cursor(test_board_jay)
 
         lhs = left, right, up, down
-        rhs = [Square(0, 0), Square(0, 2), None, Square(1, 1)]
+        rhs = [Cell(0, 0), Cell(0, 2), None, Cell(1, 1)]
         assert(lhs == rhs)
 
     def test_reverse(self, verbose=VERBOSE):
@@ -210,24 +210,24 @@ class TestSearchState(unittest.TestCase):
         a = rev.children['a']
         y = a.children['y']
 
-        move_placed_letters = [PlacedLetter(Square(0, 0), 'j')]
-        move_primary_word = PlacedWord(Square(0, 0), Square(0, 0), 'j')
+        move_placed_letters = [PlacedLetter(Cell(0, 0), 'j')]
+        move_primary_word = PlacedWord(Cell(0, 0), Cell(0, 0), 'j')
         move_secondary_words = []
         move_acc = Move(move_placed_letters, move_primary_word, move_secondary_words)
 
-        cursor = Square(1, 0)
+        cursor = Cell(1, 0)
         bdir = BoardDirection.RIGHT
         rack = '_'
         ss = SearchState(move_acc, a, cursor, bdir, rack)
         ss.update_blank_in_rack(gtree, test_board_jay)
 
         other = SearchState(
-                    Move(move_placed_letters +  [PlacedLetter(Square(1, 0), 'A')]
-                        , PlacedWord(Square(0, 0), Square(1, 0), 'ja')
+                    Move(move_placed_letters +  [PlacedLetter(Cell(1, 0), 'A')]
+                        , PlacedWord(Cell(0, 0), Cell(1, 0), 'ja')
                         , []
                         )
                     , y
-                    , Square(2, 0)
+                    , Cell(2, 0)
                     , BoardDirection.RIGHT
                     , ''
                     )
@@ -250,24 +250,24 @@ class TestSearchState(unittest.TestCase):
         a = rev.children['a']
         y = a.children['y']
 
-        move_placed_letters = [PlacedLetter(Square(0, 0), 'j')]
-        move_primary_word = PlacedWord(Square(0, 0), Square(0, 0), 'j')
+        move_placed_letters = [PlacedLetter(Cell(0, 0), 'j')]
+        move_primary_word = PlacedWord(Cell(0, 0), Cell(0, 0), 'j')
         move_secondary_words = []
         move_acc = Move(move_placed_letters, move_primary_word, move_secondary_words)
 
-        cursor = Square(1, 0)
+        cursor = Cell(1, 0)
         bdir = BoardDirection.RIGHT
         rack = 'a'
         ss = SearchState(move_acc, a, cursor, bdir, rack)
         ss.update_blank_in_rack(gtree, test_board_jay)
 
         other = SearchState(
-                    Move(move_placed_letters +  [PlacedLetter(Square(1, 0), 'a')]
-                        , PlacedWord(Square(0, 0), Square(1, 0), 'ja')
+                    Move(move_placed_letters +  [PlacedLetter(Cell(1, 0), 'a')]
+                        , PlacedWord(Cell(0, 0), Cell(1, 0), 'ja')
                         , []
                         )
                     , y
-                    , Square(2, 0)
+                    , Cell(2, 0)
                     , BoardDirection.RIGHT
                     , ''
                     )
@@ -292,26 +292,26 @@ class TestSearchState(unittest.TestCase):
         eow = y.children[GNode.CHAR_EOW]
 
         move_placed_letters = [
-                PlacedLetter(Square(0, 0), 'j')
-                , PlacedLetter(Square(1, 0), 'a')
+                PlacedLetter(Cell(0, 0), 'j')
+                , PlacedLetter(Cell(1, 0), 'a')
                 ]
-        move_primary_word = PlacedWord(Square(0, 0), Square(1, 0), 'ja')
+        move_primary_word = PlacedWord(Cell(0, 0), Cell(1, 0), 'ja')
         move_secondary_words = []
         move_acc = Move(move_placed_letters, move_primary_word, move_secondary_words)
 
-        cursor = Square(2, 0)
+        cursor = Cell(2, 0)
         bdir = BoardDirection.RIGHT
         rack = 'abcd'
         ss = SearchState(move_acc, y, cursor, bdir, rack)
         ss.update_char_on_board(test_board_jay)
 
         other = SearchState(
-                    Move(move_placed_letters +  [PlacedLetter(Square(2, 0), 'y')]
-                        , PlacedWord(Square(0, 0), Square(2, 0), 'jay')
+                    Move(move_placed_letters +  [PlacedLetter(Cell(2, 0), 'y')]
+                        , PlacedWord(Cell(0, 0), Cell(2, 0), 'jay')
                         , []
                         )
                     , eow
-                    , Square(3, 0)
+                    , Cell(3, 0)
                     , BoardDirection.RIGHT
                     , 'abcd'
                     )

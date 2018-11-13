@@ -6,22 +6,22 @@ from collections import Counter, namedtuple
 from board_direction import BoardDirection
 
 
-Square = namedtuple('Square', ['x', 'y'])
+Cell = namedtuple('Cell', ['x', 'y'])
 
 
 class Util:
     @staticmethod
-    def add_sq_bdir(sq, bdir):
-        return Square(sq.x + bdir.value[0], sq.y + bdir.value[1])
+    def add_cell_bdir(cell, bdir):
+        return Cell(cell.x + bdir.value[0], cell.y + bdir.value[1])
 
     @staticmethod
-    def do_rows_form_square(rows):
+    def do_rows_form_cell(rows):
         row_count = len(rows)
         are_rows_same_length = all(map(lambda row: len(row) == row_count, rows))
         if not are_rows_same_length:
             return False
-        is_board_square = row_count == len(rows[0])
-        return is_board_square
+        is_board_cell = row_count == len(rows[0])
+        return is_board_cell
 
     @staticmethod
     def get_rows_from_config(cfg):
@@ -60,8 +60,8 @@ class Util:
         return { d[k]: k for k in d }
 
     @staticmethod
-    def sq2str(square):
-        return f'({square[0]},{square[1]})' if square else 'None'
+    def cell2str(cell):
+        return f'({cell[0]},{cell[1]})' if cell else 'None'
 
     @staticmethod
     def tabify(s):

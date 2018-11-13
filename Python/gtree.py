@@ -7,7 +7,6 @@ from board import Board
 from board_direction import BoardDirection
 from move import Move, PlacedLetter, PlacedWord
 from typing import Iterable, List, Set
-from util import Square
 
 
 # A node in a GADDAG. (See the Wikipedia page for GADDAG.)

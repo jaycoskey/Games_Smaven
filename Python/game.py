@@ -106,12 +106,12 @@ class Game:
             placed_chars = ''.join([pl.char for pl in turn.move.placed_letters])
             player.rack = Util.remove_chars(player.rack, placed_chars)
             for pl in turn.move.placed_letters:
-                board[pl.square] = pl.char
+                board[pl.cell] = pl.char
             player.score += self.board.move2points(turn.move)
 
-            num_letters_to_draw = min(placed_chars, len(self.bag))
+            num_letters_to_draw = min(len(placed_chars), len(self.bag))
             if num_letters_to_draw > 0:
-                drawn_letters = self.bag.draw(len(num_letters_to_draw))
+                drawn_letters = self.bag.draw(num_letters_to_draw)
             else:
                 pass  # Game is over
 

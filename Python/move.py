@@ -2,7 +2,7 @@
 
 from board_direction import BoardDirection
 from typing import List
-from util import Square, Util
+from util import Cell, Util
 
 
 class Move:
@@ -36,55 +36,55 @@ class Move:
 
 # Note: The use here of lowercase and uppercase does not work for most languages.
 class PlacedLetter:
-    def __init__(self, square:Square, char:str, is_blank:bool=False):
+    def __init__(self, cell:Cell, char:str, is_blank:bool=False):
         self.char = upper(char) if is_blank else char.lower()
-        self.square = square
+        self.cell = cell
 
     def __str__(self):
-        return f"'{self.char}'@{Util.sq2str(self.square)}"
+        return f"'{self.char}'@{Util.cell2str(self.cell)}"
 
     def copy(self):
-        return PlacedLetter(self.square, self.char)
+        return PlacedLetter(self.cell, self.char)
 
     def is_blank(self):
         return isupper(self.char)
 
 
 class PlacedWord:
-    def __init__(self, square_begin, square_end, word):
-        self.square_begin = square_begin
-        self.square_end = square_end
+    def __init__(self, cell_begin, cell_end, word):
+        self.cell_begin = cell_begin
+        self.cell_end = cell_end
         self.word = word
 
     def __str__(self):
-        return f'"{self.word}"@[{Util.sq2str(self.square_begin)}..{Util.sq2str(self.square_end)}]'
+        return f'"{self.word}"@[{Util.cell2str(self.cell_begin)}..{Util.cell2str(self.cell_end)}]'
 
     def copy(self):
-        return PlacedWord(self.square_begin, self.square_end, self.word)
+        return PlacedWord(self.cell_begin, self.cell_end, self.word)
 
-    def squares(self):
-        if self.square_begin == self.square_end:
-            return [self.square_begin]
-        elif self.square_begin.x < self.square_end.x:
-            assert(self.square_begin.y == self.square_end.y)
-            y = self.square_begin.y
-            return [Square(x, y) for x in range(self.square_begin.x, self.square_end.x + 1)]
-        elif self.square_begin.y < self.square_end.y:
-            assert(self.square_begin.x == self.square_end.x)
-            x = self.square_begin.x
-            return [Square(x, y) for y in range(self.square_begin.y, self.square_end.y + 1)]
+    def cells(self):
+        if self.cell_begin == self.cell_end:
+            return [self.cell_begin]
+        elif self.cell_begin.x < self.cell_end.x:
+            assert(self.cell_begin.y == self.cell_end.y)
+            y = self.cell_begin.y
+            return [Cell(x, y) for x in range(self.cell_begin.x, self.cell_end.x + 1)]
+        elif self.cell_begin.y < self.cell_end.y:
+            assert(self.cell_begin.x == self.cell_end.x)
+            x = self.cell_begin.x
+            return [Cell(x, y) for y in range(self.cell_begin.y, self.cell_end.y + 1)]
         else:
             ValueError('Internal error in Board.points_word')
 
     def updated(self, cursor, bdir, char):
-        next_square_begin = (
-                self.square_begin if BoardDirection.is_forward(bdir)
-                else Util.add_sq_bdir(self.square_begin, bdir)
+        next_cell_begin = (
+                self.cell_begin if BoardDirection.is_forward(bdir)
+                else Util.add_cell_bdir(self.cell_begin, bdir)
                 )
-        next_square_end = (
-                self.square_end if not BoardDirection.is_forward(bdir)
-                else Util.add_sq_bdir(self.square_end, bdir)
+        next_cell_end = (
+                self.cell_end if not BoardDirection.is_forward(bdir)
+                else Util.add_cell_bdir(self.cell_end, bdir)
                 )
         next_word = Util.updated_str_with_char(self.word, bdir, char)
 
-        return PlacedWord(next_square_begin, next_square_end, next_word)
+        return PlacedWord(next_cell_begin, next_cell_end, next_word)
