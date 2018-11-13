@@ -108,7 +108,12 @@ class Game:
             for pl in turn.move.placed_letters:
                 board[pl.square] = pl.char
             player.score += self.board.move2points(turn.move)
-            drawn_letters = self.bag.draw(len(placed_chars))
+
+            num_letters_to_draw = min(placed_chars, len(self.bag))
+            if num_letters_to_draw > 0:
+                drawn_letters = self.bag.draw(len(num_letters_to_draw))
+            else:
+                pass  # Game is over
 
         elif turn.turn_type == TurnType.SWAP:
             self.was_prev_turn_pass = False
@@ -130,17 +135,17 @@ class Game:
 
 class GameCommunication:
     @staticmethod
-    def get_turn_from_computer():
+    def turn_get_from_computer():
         pass  # TODO
 
     @staticmethod
-    def get_turn_from_human():
+    def turn_get_from_human():
         pass  # TODO
 
     @staticmethod
-    def report_turn_from_computer():
+    def turn_report_to_computer():
         pass  # TODO: Callback
 
     @staticmethod
-    def report_turn_from_human():
+    def turn_report_to_human():
         pass  # TODO 
