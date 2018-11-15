@@ -4,7 +4,7 @@ from random import randint
 
 
 class Bag:
-    CHAR_BLANK = ' '
+    CHAR_BLANK = '_'
     DRAWN_NONE = ''
     DRAWN_UNKNOWN = '?'
     DISCARDED_NONE = ''
