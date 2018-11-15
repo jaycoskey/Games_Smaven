@@ -14,12 +14,12 @@ class Move:
 
     def __str__(self):
         pls_val = ','.join([str(pl) for pl in self.placed_letters])
-        pls = f'placed_letters={pls_val}'
+        pls = f"placed_letters={'NONE' if pls_val == '' else pls_val}"
         pw_val = str(self.primary_word)
         pw = f'primary_word={pw_val}'
         sec_val = ','.join([str(w) for w in self.secondary_words])
-        sec = f'secondary_words=[{sec_val}]'
-        return f'Move<{pls},{pw},{sec}'
+        sec = f"secondary_words=[{sec_val}]"
+        return f'Move<{pls},{pw},{sec}>'
 
     def copy(self):
         return Move([pl.copy() for pl in self.placed_letters]
@@ -48,6 +48,14 @@ class PlacedLetter:
 
     def is_blank(self):
         return isupper(self.char)
+
+    @property
+    def x(self):
+        return self.cell.x
+
+    @property
+    def y(self):
+        return self.cell.y
 
 
 class PlacedWord:

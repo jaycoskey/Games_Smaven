@@ -8,10 +8,9 @@ from util import Cell, Util
 
 class BoardCellType(Enum):
     BLANK = auto()
-    CENTER = auto()
+    START = auto()
     DOUBLE_LETTER = auto()
     DOUBLE_WORD = auto()
-    INIT_HOOK = auto()
     TRIPLE_LETTER = auto()
     TRIPLE_WORD = auto()
 
@@ -24,6 +23,7 @@ class Board:
             return Board.CHAR_EMPTY if c == '.' else c
 
         self.config = config
+
         if (layout is None) and (rows is None):
             raise ValueError('Error in Board initialization: layout and board parameters cannot both be None')
 
@@ -54,11 +54,16 @@ class Board:
         self.letters[cell.y][cell.x] = char
 
     def __str__(self, compact=False):
+        hooks = self.hooks()
+        letters = [['+' if Cell(c, r) in self.layout.start_cells and self.is_cell_empty(Cell(c, r))
+                        else self.letters[r][c]
+                    for c in range(self.width)]
+                    for r in range(self.height)]
         if compact:
-            return '\t' + '\n\t'.join([''.join(row) for row in self.letters])
+            return '\t' + '\n\t'.join([''.join(row) for row in letters])
         else:
             header_footer = '\t' + ' ' * 4 + (''.join([str(k) for k in range(10)]) * 5)[:self.width]
-            rows = [''.join(row) for row in self.letters]
+            rows = [''.join(row) for row in letters]
             body = '\n'.join([f'\t{k:3d} {row} {k:3d}' for k, row in enumerate(rows)])
             return '{}\n{}\n{}'.format(header_footer, body, header_footer)
 
@@ -67,20 +72,18 @@ class Board:
 
     # TODO: More efficient general solution? Set intersection? More efficient special cases (e.g., sparse board)?
     def hooks(self):
-        """Return empty Cells adjacent to ones already filled. (If board is empty, return INIT_HOOKS.)"""
-        if self.is_empty():
-            return [Cell(int(layout.width / 2), int(layout.height / 2))]
-
-        filled = set([s for s in self.cells_filled()])
-        if not filled:  # If first player passed, for some reason
-            return [Cell(int(layout.width / 2), int(layout.height / 2))]
-
         hooks = []
-        for s in self.cells():
-            if self[s] is None:
-                for adj in self.cells_adjacent(s):
-                    if adj in s:
-                        hooks.append(adj)
+        for cell in self.layout.start_cells:
+            if self[cell] == Board.CHAR_EMPTY:
+                hooks.append(cell)
+
+        filled = set([cell for cell in self.cells_filled()])
+        for cell in self.cells():
+            if self[cell] == Board.CHAR_EMPTY:
+                for adj in self.cells_adjacent(cell):
+                    if adj in filled:
+                        hooks.append(cell)
+                        break
         return hooks
 
     # TODO: Improve efficiency. Unless undo is implemented, is_empty can be cached.
@@ -90,19 +93,19 @@ class Board:
                         for row in self.letters
                         ])
 
-    def is_cell_empty(self, s):
-        return self[s] != Board.CHAR_EMPTY
+    def is_cell_empty(self, cell):
+        return self[cell] == Board.CHAR_EMPTY
 
-    def is_cell_on_board(self, s):
-        return (0 <= s.x < self.width) and (0 <= s.y < self.height)
+    def is_cell_on_board(self, cell):
+        return (0 <= cell.x < self.width) and (0 <= cell.y < self.height)
 
     def move2points(self, move):
         cell2pl = {Cell(pl.x, pl.y): pl for pl in move.placed_letters}
         points = self.word2points(cell2pl, move.primary_word)
         for secondary_word in move.secondary_words:
             points += self.word2points(cell2pl, move.secondary_word)
-        if len(move.placed_letters) == int(self.config['rack_size']):
-            points += int(self.config['bingo_points'])
+        if len(move.placed_letters) == int(self.game.config['rack_size']):
+            points += int(self.game.config['bingo_points'])
         return points
 
     def cells(self):
@@ -116,9 +119,12 @@ class Board:
                 yield Cell(x, y)
 
     def cells_filled(self):
-        for s in self.cells():
-            if self[s] is not None:
-                yield s
+        for cell in self.cells():
+            if self[cell] != Board.CHAR_EMPTY:
+                yield cell 
+
+    def set_game(self, game):
+        self.game = game
 
     def word2points(self, cell2pl, pw:PlacedWord):
         points = 0
@@ -127,13 +133,13 @@ class Board:
             # Letter is being placed on board
             if cell in cell2pl:
                 pl = cell2pl[cell]
+                letter_multiplier = 1
                 if pl.char.islower():
-                    bst = self.layout[cell.y][cell.x]
-                    letter_multipler = 1
+                    bst = self.layout[cell]
                     if bst == BoardCellType.DOUBLE_LETTER:
-                        letter_multipler = 2
+                        letter_multiplier = 2
                     elif bst == BoardCellType.TRIPLE_LETTER:
-                        letter_multipler = 3
+                        letter_multiplier = 3
                     elif bst == BoardCellType.DOUBLE_WORD:
                         word_multiplier *= 2
                     elif bst == BoardCellType.TRIPLE_WORD:
@@ -147,19 +153,33 @@ class Board:
 
 
 class BoardLayout:
-    char2bstype = { '.': BoardCellType.BLANK
-                    , '*': BoardCellType.CENTER
-                    , 'd': BoardCellType.DOUBLE_LETTER
-                    , 'D': BoardCellType.DOUBLE_WORD
-                    , 't': BoardCellType.TRIPLE_LETTER
-                    , 'T': BoardCellType.TRIPLE_WORD }
+    CHAR_LAYOUT_BLANK = '.'
+    CHAR_LAYOUT_START = '*'
+    CHAR_LAYOUT_DOUBLE_LETTER = '2'
+    CHAR_LAYOUT_DOUBLE_WORD = '@'
+    CHAR_LAYOUT_TRIPLE_LETTER = '3'
+    CHAR_LAYOUT_TRIPLE_WORD = '#'
+
+    char2bstype = { CHAR_LAYOUT_BLANK: BoardCellType.BLANK
+                    , CHAR_LAYOUT_START: BoardCellType.START
+                    , CHAR_LAYOUT_DOUBLE_LETTER: BoardCellType.DOUBLE_LETTER
+                    , CHAR_LAYOUT_DOUBLE_WORD: BoardCellType.DOUBLE_WORD
+                    , CHAR_LAYOUT_TRIPLE_LETTER: BoardCellType.TRIPLE_LETTER
+                    , CHAR_LAYOUT_TRIPLE_WORD: BoardCellType.TRIPLE_WORD }
     bstype2char = Util.reversed_dict(char2bstype)
+
     def __init__(self, rows):
         self.letters = [[BoardLayout.char2bstype[c] for c in row] for row in rows]
         is_rectangle = all([len(row) == len(self.letters[0]) for row in self.letters])
         assert(is_rectangle)
         self.height = len(self.letters)
         self.width = len(self.letters[0])
+        self.start_cells = [Cell(x, y) for x in range(self.width) for y in range(self.height)
+                            if self[Cell(x, y)] == BoardCellType.START
+                            ]
+
+    def __getitem__(self, cell):
+        return self.letters[cell.y][cell.x]
 
     def __str__(self, compact=False):
         if compact:

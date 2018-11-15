@@ -57,6 +57,11 @@ class GNode:
             child = self.add_child(s[0])
             child.add_string(s[1:])
 
+    def copy(self):
+        node = GNode(self.char)
+        node.children = self.children
+        return node
+
 
 class GTree:
     VERBOSE = False
@@ -118,7 +123,7 @@ class GTree:
         else:
             chars = word[0] + GNode.CHAR_REV + word[1:] + GNode.CHAR_EOW
         cursor = self.root
-        for c in chars:
+        for c in chars.lower():
             if c not in cursor.children:
                 return False
             else:

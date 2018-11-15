@@ -17,6 +17,7 @@ class GameEndType(Enum):
     PLAYER_PLAYED_LAST_TILE = auto()
     PLAYER_RESIGNED = auto()
 
+
 class GameState(Enum):
     NOT_STARTED = auto()
     IN_PLAY = auto()
@@ -36,7 +37,9 @@ class Game:
         self.history:List[Turn] = []
         self.num_players = int(config['player_count'])
         self.was_prev_turn_pass = False
-        self.winner = None  # Remove? 
+        self.winner_id = None  # Remove? 
+
+        self.board.set_game(self)
 
         points2chars = config[config['points2chars']]
         self.char2points = {}
@@ -75,7 +78,6 @@ class Game:
         for p in players:
             p.rack = self.bag.draw(7)
 
-
     def exit(self):
         # Clean up resources, notify players, etc.
         pass
@@ -94,32 +96,41 @@ class Game:
             player = self.pid2player[self.cur_player_id]
             player.show_game_state()
             turn = player.turn_get()
-            if turn.turn_type == TurnType.RESIGN:
-                self.game_state == GameState.DONE
             self.turn_execute(turn)
-            self.cur_player_id = self.pid2next[self.cur_player_id]
+            if self.game_state == GameState.DONE:
+                if turn.turn_type != TurnType.RESIGN:
+                    scores = {p.player_id: p.score for p in self.players}
+                    self.winner_id = sorted(scores, key=lambda p: p[1])[-1]
+                wid = self.winner_id
+                print(f'Player #{wid} has won! Congratulations, {self.pid2player[wid].name}!')
+                self.cur_player_id = self.winner_id
+            else:
+                self.cur_player_id = self.pid2next[self.cur_player_id]
 
     def turn_execute(self, turn):
+        print(f'INFO: Entering turn_execute: turn={turn}')
         player = self.pid2player[turn.player_id]
         if turn.turn_type == TurnType.PLACE:
             self.was_prev_turn_pass = False
             placed_chars = ''.join([pl.char for pl in turn.move.placed_letters])
             player.rack = Util.remove_chars(player.rack, placed_chars)
             for pl in turn.move.placed_letters:
-                board[pl.cell] = pl.char
+                self.board[pl.cell] = pl.char
             player.score += self.board.move2points(turn.move)
 
             num_letters_to_draw = min(len(placed_chars), len(self.bag))
             if num_letters_to_draw > 0:
                 drawn_letters = self.bag.draw(num_letters_to_draw)
+                player.rack += drawn_letters
+                print(f"After {player.name}'s turn, rack={player.rack}")
             else:
-                pass  # Game is over
+                self.game_state = GameState.DONE
 
         elif turn.turn_type == TurnType.SWAP:
             self.was_prev_turn_pass = False
-            player.rack = Util.remove_chars(rack, discarded_letters)
-            self.bag.add(turn.discarded_letters)
-            drawn_chars = self.bag.draw(len(discarded_letters))
+            player.rack = Util.remove_chars(player.rack, turn.discarded)
+            self.bag.add(turn.discarded)
+            drawn_chars = self.bag.draw(len(turn.discarded))
             player.rack += drawn_chars
 
         elif turn.turn_type == TurnType.PASS:
@@ -129,6 +140,7 @@ class Game:
         elif turn.turn_type == TurnType.RESIGN:
             self.game_state = GameState.DONE
             self.game_end_type = GameEndType.PLAYER_RESIGNED
+            self.winner_id = self.pid2next[turn.player_id]
         else:
             raise ValueError(f'Unknown turn type: {turn.turn_type}')
 

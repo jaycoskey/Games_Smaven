@@ -218,6 +218,7 @@ class TestSearchState(unittest.TestCase):
         cursor = Cell(1, 0)
         bdir = BoardDirection.RIGHT
         rack = '_'
+        assert(type(a).__name__ == 'GNode')
         ss = SearchState(move_acc, a, cursor, bdir, rack)
         ss.update_blank_in_rack(gtree, test_board_jay)
 
@@ -327,4 +328,10 @@ def get_function_name():
 
 if __name__ == '__main__':
     # TestSearch.show_test_search_config():
-    runner = unittest.main()
+
+    TestSearch('test_fill_gap').test_fill_gap()
+    # TestSearch('test_fill_gap_with_blank').test_fill_gap_with_blank()
+    # TestSearchState('test_update_blank_in_rack').test_update_blank_in_rack()
+
+    # runner = unittest.main()
+

@@ -15,6 +15,10 @@ class Util:
         return Cell(cell.x + bdir.value[0], cell.y + bdir.value[1])
 
     @staticmethod
+    def cell_copy(cell):
+        return Cell(cell.x, cell.y)
+
+    @staticmethod
     def do_rows_form_cell(rows):
         row_count = len(rows)
         are_rows_same_length = all(map(lambda row: len(row) == row_count, rows))
@@ -45,9 +49,10 @@ class Util:
 
     @staticmethod
     def remove_char(rack, c):
-        index = rack.find(c)
+        assert(c in rack)
+        indx = rack.index(c)
         end = len(rack)
-        return rack[0: index] + rack[index + 1: end]
+        return rack[0: indx] + rack[indx + 1: end]
 
     @staticmethod
     def remove_chars(rack, s):
@@ -69,4 +74,7 @@ class Util:
 
     @staticmethod
     def updated_str_with_char(s, bdir, c):
-        return (s + c) if BoardDirection.is_forward(bdir) else (c + s)
+        if s is None:
+            return c
+        else:
+            return (s + c) if BoardDirection.is_forward(bdir) else (c + s)

@@ -41,7 +41,7 @@ def main(config, args):
         if args.rack is None or len(args.rack) == 0:
             raise ValueError('search feature requires rack to be set')
 
-        gtree = GTree('/usr/share/dict/words')
+        game = Game(config, gtree, board)
         do_use_board_config = args.boardfile[0] == '@'
         board_rows = ( Util.get_rows_from_config(config[args.boardfile[1:]])
                         if do_use_board_config
@@ -53,6 +53,7 @@ def main(config, args):
             print(f'Board:\n{board}')
             print(f'Rack: {args.rack}')
 
+        gtree = GTree('/usr/share/dict/words')
         search = Search(gtree, board)
         moves = search.find_moves(args.rack)
         if moves:
