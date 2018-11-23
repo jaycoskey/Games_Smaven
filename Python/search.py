@@ -45,11 +45,15 @@ class Search:
         else:  # node.char is alphabetic
             is_char_on_board = self.board[ss.cursor] == ss.node.char
             if is_char_on_board:
-                yield from self.find_moves_ss(ss.update_char_on_board(self.board))
+                ss.update_char_on_board(self.board)
+                if ss.cursor:
+                    yield from self.find_moves_ss(ss)
             else:
                 is_char_in_rack = ss.node.char in ss.rack
                 if is_char_in_rack:
-                    yield from self.find_moves_ss(ss.update_char_in_rack(self.gtree, self.board))
+                    ss.update_char_in_rack(self.gtree, self.board)
+                    if ss.cursor:
+                        yield from self.find_moves_ss(ss)
 
                 is_blank_in_rack = GNode.CHAR_BLANK in ss.rack
                 if is_blank_in_rack:
@@ -144,39 +148,50 @@ class SearchState:
         cell = Cell(self.cursor.x + self.bdir.value[0], self.cursor.y + self.bdir.value[1])
         return cell if board.is_cell_on_board(cell) else None
 
-    def reverse_search_direction(self, board):
-        self.cursor = move_acc.placed_letters[0].cell
-        self.bdir = BoardDirection.reversed(self.bdir)
-        self.cursor = self.next_cursor(board)
+    def reverse_search_direction(self, board, do_copy=False):
+        ss = self.copy() if do_copy else self
+        ss.cursor = move_acc.placed_letters[0].cell
+        ss.bdir = BoardDirection.reversed(ss.bdir)
+        ss.cursor = ss.next_cursor(board)
 
-    def update_blank_in_rack(self, gtree, board)->'SearchState':
-        self.move_acc.placed_letters.append(PlacedLetter(self.cursor, self.node.char.upper()))
-        self.move_acc.primary_word = self.move_acc.primary_word.updated(
-                self.cursor
-                , self.bdir
-                , board[self.cursor]
+    def update_blank_in_rack(self, gtree, board, do_copy=False)->'SearchState':
+        assert(Bag.CHAR_BLANK in self.rack)
+        ss = self.copy() if do_copy else self
+        ss.move_acc.placed_letters.append(PlacedLetter(ss.cursor, ss.node.char.upper()))
+        ss.move_acc.primary_word = ss.move_acc.primary_word.updated(
+                ss.cursor
+                , ss.bdir
+                , ss.node.char.upper()
                 )
-        new_secondary_word = self.get_secondary_word(gtree, board)
+        new_secondary_word = ss.get_secondary_word(gtree, board)
         if new_secondary_word:
-            self.move_acc.secondary_words.append(new_secondary_word)
-        self.cursor = self.next_cursor(board)
-        self.rack = Util.remove_char(self.rack, Bag.CHAR_BLANK)
+            ss.move_acc.secondary_words.append(new_secondary_word)
+        ss.cursor = ss.next_cursor(board)
+        ss.rack = Util.remove_char(ss.rack, Bag.CHAR_BLANK)
+        return ss if do_copy else None
 
-    def update_char_in_rack(self, gtree, board)->'SearchState':
-        ss = self.copy()
-        ss.move_acc.placed_letters.append(PlacedLetter(self.cursor, self.node.char))
-        ss.move_acc.primary_word = self.move_acc.primary_word.updated(self.cursor, self.bdir, board[self.cursor])
-        new_secondary_word = self.get_secondary_word(gtree, board)
+    def update_char_in_rack(self, gtree, board, do_copy=False)->'SearchState':
+        assert(self.node.char in self.rack)
+        ss = self.copy() if do_copy else self
+        ss.move_acc.placed_letters.append(PlacedLetter(ss.cursor, ss.node.char))
+        ss.move_acc.primary_word = ss.move_acc.primary_word.updated(
+                                        ss.cursor
+                                        , ss.bdir
+                                        , ss.node.char
+                                        )
+        new_secondary_word = ss.get_secondary_word(gtree, board)
         if new_secondary_word:
-            self.move_acc.secondary_words.append(new_secondary_word)
-        self.cursor = self.next_cursor(board)
-        self.rack = Util.remove_char(self.rack, self.node.char)
-        return self
+            ss.move_acc.secondary_words.append(new_secondary_word)
+        ss.cursor = ss.next_cursor(board)
+        ss.rack = Util.remove_char(ss.rack, ss.node.char)
+        return ss if do_copy else None
 
-    def update_char_on_board(self, board)->'SearchState':
+    def update_char_on_board(self, board, do_copy=False)->'SearchState':
+        assert(board[self.cursor] == self.node.char)
+        ss = self.copy() if do_copy else self
         # Do not update placed_letters
-        self.move_acc.primary_word = self.move_acc.primary_word.updated(self.cursor, self.bdir, board[self.cursor])
+        ss.move_acc.primary_word = ss.move_acc.primary_word.updated(ss.cursor, ss.bdir, board[ss.cursor])
         # Do not update secondary_word
-        self.cursor = self.next_cursor(board)
+        ss.cursor = ss.next_cursor(board)
         # Do not update rack
-        return self
+        return ss if do_copy else None

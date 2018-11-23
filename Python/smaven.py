@@ -26,7 +26,9 @@ class Command:
 
 
 def main(config, args):
-    # TODO: search ==> Initialize Board (BoardLayout, Board) ==> Enter rack & find words
+    if Util.TEST_FEATURES:
+        print(f'args={args}')
+
     if args.layoutfile is None or len(args.layoutfile) == 0:
         raise ValueError('search feature requires layoutfile to be set')
 
@@ -41,7 +43,6 @@ def main(config, args):
         if args.rack is None or len(args.rack) == 0:
             raise ValueError('search feature requires rack to be set')
 
-        game = Game(config, gtree, board)
         do_use_board_config = args.boardfile[0] == '@'
         board_rows = ( Util.get_rows_from_config(config[args.boardfile[1:]])
                         if do_use_board_config
@@ -53,7 +54,10 @@ def main(config, args):
             print(f'Board:\n{board}')
             print(f'Rack: {args.rack}')
 
+        print('Creating dictionary....')
         gtree = GTree('/usr/share/dict/words')
+
+        game = Game(config, gtree, board)
         search = Search(gtree, board)
         moves = search.find_moves(args.rack)
         if moves:
@@ -70,8 +74,15 @@ def main(config, args):
 
     elif args.command == Command.PLAYERS:
         gtree = GTree('/usr/share/dict/words')
-        board = Board(config, layout, None)
-        game = Game(config, gtree, board)
+        if args.testboard:
+            do_use_board_config = args.testboard[0] == '@'
+            board_rows = ( Util.get_rows_from_config(config[args.testboard[1:]])
+                            if do_use_board_config
+                            else Util.get_rows_from_filename(args.testboard))
+            board = Board(config, layout=layout, rows=board_rows)
+        else:
+            board = Board(config, layout, None)
+        game = Game(config, gtree, board, **{'test_name1':'auto', 'test_name2':'auto', 'test_rack1':'auto', 'test_rack2':'auto'})
         game.play()
 
     elif args.command == Command.ML:  # Train computer strategy via ML
@@ -121,14 +132,19 @@ if __name__ == '__main__':
     parser_ml = subparsers.add_parser(Command.ML, help='Develop a strategy by playing Computer vs Computer')
 
     # Search args
-    parser_search.add_argument('-b', '--boardfile', help='File that contains letters present on board', default='@board_scrabble_test1')
+    parser_search.add_argument('-b', '--boardfile', help='File that contains letters present on board', default='@test_board_scrabble')
     parser_search.add_argument('-r', '--rack', help='Rack that contains letters to be used in search', default='etaoins')
 
     # Player args
-    players_group = parser_players.add_argument_group(title='players command sub-args')
-    parser_players.add_argument('--hh', nargs='?', dest='players_mode', const='hh', help='Human vs Human')
-    parser_players.add_argument('--hc', nargs='?', dest='players_mode', const='hc', help='Human vs Computer')
+    parser_players.add_argument('--testboard', help='File that contains letters present on board', default='@test_board_scrabble')
     parser_players.add_argument('--cc', nargs='?', dest='players_mode', const='cc', help='Computer vs Computer')
+    parser_players.add_argument('--ch', nargs='?', dest='players_mode', const='ch', help='Computer vs Human')
+    parser_players.add_argument('--hc', nargs='?', dest='players_mode', const='hc', help='Human vs Computer')
+    parser_players.add_argument('--hh', nargs='?', dest='players_mode', const='hh', help='Human vs Human')
+    parser_players.add_argument('--test_name1', help='Name of player #1', default='auto')
+    parser_players.add_argument('--test_name2', help='Name of player #2', default='auto')
+    parser_players.add_argument('--test_rack1', help='Letters initially in the rack of player #1', default='auto')
+    parser_players.add_argument('--test_rack2', help='Letters initially in the rack of player #2', default='auto')
 
     # TODO: Specify how players join and how their identity & connection info is obtained
     # TODO: Specify how input is obtained: keyboard/server:port/etc.

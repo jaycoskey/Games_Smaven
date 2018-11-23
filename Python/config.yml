@@ -6,15 +6,12 @@ introduction: |
 board_layout: layout_scrabble
 dictionary_file: /usr/share/dict/words
 logfile_basename: smaven
-counts2chars: letter_counts_scrabble_en
-points2chars: letter_points_scrabble_en
+counts2chars: count2chars_scrabble_en
+points2chars: points2chars_scrabble_en
 player_colors:
     - 1: "aqua"
     - 2: "tangerine"
 player_count: 2
-player_names:
-    - 1: "Amy"
-    - 1: "Bob"
 rack_size: 7
 bingo_points: 50
 config_hrule1: ########## ########## ########## ########## ########## ##########
@@ -63,7 +60,7 @@ layout_wwf_challenge: |
     .@...@...@.
     3.#.....#.3
 config_hrule2: ########## ########## ########## ########## ########## ##########
-letter_counts_scrabble_en:
+count2chars_scrabble_en:
     1: "kjqxz"
     2: "_bcfhmpvwy"
     3: "g"
@@ -72,7 +69,7 @@ letter_counts_scrabble_en:
     8: "o"
     9: "ai"
     12: "e"
-letter_counts_wwf_en:
+count2chars_wwf_en:
     1: "jkqxz"
     2: "_bcfmpvwy"
     3: "g"
@@ -83,7 +80,7 @@ letter_counts_wwf_en:
     8: "io"
     9: "a"
     13: "e"
-letter_points_scrabble_en:
+points2chars_scrabble_en:
     0: "_"
     1: "aeilnorstu"
     2: "dg"
@@ -92,7 +89,7 @@ letter_points_scrabble_en:
     5: "k"
     8: "jx"
     10: "qz"
-letter_points_wwf_en:
+points2chars_wwf_en:
     0: "_"
     1: "aeiorst"
     2: "dlnu"
@@ -114,19 +111,24 @@ help_command_syntax: |
         pass                  - Pass on this round
         resign                - Accept defeat; give your opponent the win
 config_hrule4: ########## ########## ########## ########## ########## ##########
-board_scrabble_test1: |
-    ...............
-    ...............
-    ........f......
-    ........r......
-    ........i......
-    ........eM.....
-    .....t..nO.....
-    ....GRIDDLE....
-    .....y...E.....
-    .....o.........
-    .....uMBRELLA..
-    .....t.........
+test_board_scrabble: |
     ...............
     ...............
     ...............
+    ...............
+    ........a......
+    ......a.p......
+    ......p.p......
+    .....apple.....
+    ......l.e......
+    ......e........
+    ...............
+    ...............
+    ...............
+    ...............
+    ...............
+test_name1: Amy
+test_name2: Bob
+test_rack1: caiolmss
+test_rack2: axquick
+

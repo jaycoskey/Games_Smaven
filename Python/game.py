@@ -26,7 +26,7 @@ class GameState(Enum):
 
 
 class Game:
-    def __init__(self, config, gtree, board):
+    def __init__(self, config, gtree, board, **kwargs):
         self.bag = Bag(config[config['counts2chars']])
         self.board = board
         self.config = config
@@ -56,18 +56,30 @@ class Game:
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
 
-        self._init_players(self.num_players)
+        if Util.TEST_FEATURES:
+            if 'test_name1' in kwargs and kwargs['test_name1'] == 'auto': kwargs['test_name1'] = self.config['test_name1']
+            if 'test_name2' in kwargs and kwargs['test_name2'] == 'auto': kwargs['test_name2'] = self.config['test_name2']
+
+            if 'test_rack1' in kwargs and kwargs['test_rack1'] == 'auto': kwargs['test_rack1'] = self.config['test_rack1']
+            if 'test_rack2' in kwargs and kwargs['test_rack2'] == 'auto': kwargs['test_rack2'] = self.config['test_rack2']
+
+        self._init_players(self.num_players, **kwargs)
 
 
-    def _get_players(self, num_players):
+    def _get_players(self, num_players, **kwargs):
         result = []
         for player_id in range(1, num_players + 1):
-            p = Player(self, player_id)
+            # TEST_FEATURE
+            name_key = 'test_name' + str(player_id)
+            if name_key in kwargs:
+                p = Player(self, player_id, name=self.config[name_key])
+            else:
+                p = Player(self, player_id)
             result.append(p)
         return result
 
-    def _init_players(self, num_players):
-        players = self._get_players(num_players)
+    def _init_players(self, num_players, **kwargs):
+        players = self._get_players(num_players, **kwargs)
         ordered_pids = [p.player_id for p in players]
         self.ordered_pids = ordered_pids
         self.pid2next = { ordered_pids[k]: ordered_pids[k+1] for k in range(0, num_players - 1) }
@@ -76,7 +88,12 @@ class Game:
         self.cur_player_id = ordered_pids[0]
 
         for p in players:
-            p.rack = self.bag.draw(7)
+            # TEST_FEATURE
+            rack_key = 'test_rack' + str(p.player_id)
+            if rack_key in kwargs:
+                p.rack = self.config[rack_key]
+            else:
+                p.rack = self.bag.draw(self.config['rack_size'])
 
     def exit(self):
         # Clean up resources, notify players, etc.
@@ -108,7 +125,6 @@ class Game:
                 self.cur_player_id = self.pid2next[self.cur_player_id]
 
     def turn_execute(self, turn):
-        print(f'INFO: Entering turn_execute: turn={turn}')
         player = self.pid2player[turn.player_id]
         if turn.turn_type == TurnType.PLACE:
             self.was_prev_turn_pass = False

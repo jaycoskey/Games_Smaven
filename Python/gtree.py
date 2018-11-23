@@ -67,7 +67,6 @@ class GTree:
     VERBOSE = False
 
     def __init__(self, filename=None):
-        print('Creating dictionary ....')
         self.root = GNode(GNode.CHAR_ROOT)
         if filename:
             self.add_wordfile(filename)

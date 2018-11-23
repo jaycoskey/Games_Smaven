@@ -23,10 +23,10 @@ class Command:
 # TODO: Replace both turn_get() and turn_report() with reference to GameCommunication static methods
 #       (I.e., add a layer of indirection to support both Human and Computer play)
 class Player:
-    def __init__(self, game, player_id):
+    def __init__(self, game, player_id, name=None):
         self.game = game
         self.player_id = player_id
-        self.name = self.get_name_from_user()
+        self.name = self.get_name_from_user() if name is None else name
         self.rack = ''
         self.player_type = PlayerType.HUMAN
 
@@ -119,7 +119,7 @@ class Player:
 
                 search = Search(self.game.gtree, self.game.board)
                 placed_word = PlacedWord(cell_begin, cell_end, w)
-                secondary_words = search.get_secondary_words( placed_letters , placed_word, self.rack, False)
+                secondary_words = search.get_secondary_words(placed_letters , placed_word, self.rack, False)
                 for sw in secondary_words:
                     if not self.game.gtree.has_word(sw):
                         print(f'Invalid move: Secondary word found ({sw} is not in the game dictionary')
