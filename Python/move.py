@@ -12,6 +12,12 @@ class Move:
         self.primary_word = primary_word
         self.secondary_words = secondary_words if secondary_words else []
 
+    def __eq__(self, other):
+        return (self.placed_letters == other.placed_letters
+                and self.primary_word == other.primary_word
+                and self.secondary_words == other.secondary_words
+                )
+
     def __str__(self):
         pls_val = ','.join([str(pl) for pl in self.placed_letters])
         pls = f"placed_letters={'NONE' if pls_val == '' else pls_val}"
@@ -40,6 +46,9 @@ class PlacedLetter:
         self.char = upper(char) if is_blank else char.lower()
         self.cell = cell
 
+    def __eq__(self, other):
+        return self.char == other.char and self.cell == other.cell
+
     def __str__(self):
         return f"'{self.char}'@{Util.cell2str(self.cell)}"
 
@@ -63,6 +72,12 @@ class PlacedWord:
         self.cell_begin = cell_begin
         self.cell_end = cell_end
         self.word = word
+
+    def __eq__(self, other):
+        return (self.cell_begin == other.cell_begin
+                and self.cell_end == other.cell_end
+                and self.word == other.word
+                )
 
     def __str__(self):
         return f'"{self.word}"@[{Util.cell2str(self.cell_begin)}..{Util.cell2str(self.cell_end)}]'
