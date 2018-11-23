@@ -24,12 +24,16 @@ class Bag:
 
     def draw(self, count):
         if count > len(self.letters):
-            raise ValueError(f'Not enough letters: {len(self.letters)} available, but {count} requested')
+            avail = len(self.letters)
+            raise ValueError(f'Not enough letters: {avail} available, but {count} requested')
 
-        result = []
+        chars = []
         for _ in range(count):
             pos = randint(0, len(self.letters) - 1)
-            result.append(self.letters[pos])
+            chars.append(self.letters[pos])
             end = len(self.letters)
             self.letters = self.letters[0: pos] + self.letters[pos + 1: end]
-        return result
+        return ''.join(chars)
+
+    def is_empty(self):
+        return self.__len__() == 0

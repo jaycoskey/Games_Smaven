@@ -39,10 +39,7 @@ class Player:
 
     def show_game_state(self):
         print(f'  Board:\n{self.game.board}')
-        if type(self.rack).__name__ == 'str':
-            print('  ' + f"{self.name}'s letters: {self.rack}")
-        else:
-            print('  ' + f"{self.name}'s letters: {''.join(self.rack)}")
+        print('  ' + f"{self.name}'s letters: {self.rack}")
         print('  ' + f"Tiles left in bag: {len(self.game.bag)}")
         pid2score = {pid: self.game.pid2player[pid].score for pid in self.game.pid2player}
         pid2name = {pid: self.game.pid2player[pid].name for pid in self.game.pid2player}
@@ -145,6 +142,11 @@ class Player:
             elif cmd == Command.SWAP:
                 if len(args) < 2:
                     print(f'Invalid swap syntax: The swap command needs to be followed by letters to be swapped')
+                    continue
+                if self.game.bag.is_empty():
+                    print(f'Invalid command: Cannot swap when the bag is empty')
+                    continue
+
                 discarded_letters = ''.join(args[1:])
                 if not Util.is_subset(discarded_letters, self.rack):
                     print(f'Invalid move: You can only discard letters that are in your rack')

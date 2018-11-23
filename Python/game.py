@@ -146,8 +146,10 @@ class Game:
             self.was_prev_turn_pass = False
             player.rack = Util.remove_chars(player.rack, turn.discarded)
             self.bag.add(turn.discarded)
-            drawn_chars = self.bag.draw(len(turn.discarded))
+            num_letters_to_draw = len(turn.discarded)
+            drawn_chars = self.bag.draw(num_letters_to_draw)
             player.rack += drawn_chars
+            print(f"After {player.name}'s turn, rack={player.rack}")
 
         elif turn.turn_type == TurnType.PASS:
             if self.was_prev_turn_pass:
