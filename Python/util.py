@@ -10,6 +10,8 @@ Cell = namedtuple('Cell', ['x', 'y'])
 
 
 class Util:
+    TEST_FEATURES = True
+
     @staticmethod
     def add_cell_bdir(cell, bdir):
         return Cell(cell.x + bdir.value[0], cell.y + bdir.value[1])

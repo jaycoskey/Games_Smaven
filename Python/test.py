@@ -5,7 +5,8 @@ import yaml
 
 
 from gtree_ut import TestGTree
-from search_ut import TestSearch, TestSearchState
+from search_ut import TestSearch
+from search_state_ut import TestSearchState
 from util_ut import TestUtil
 
 
