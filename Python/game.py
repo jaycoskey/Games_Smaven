@@ -48,10 +48,10 @@ class Game:
                 self.char2points[c] = int(p)
 
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(logging.DEBUG)
         logfile_path = config['logfile_basename'] + '_' + str(os.getpid()) + '.log'
         handler = logging.FileHandler(logfile_path)
-        handler.setLevel(logging.INFO)
+        handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s:' + logging.BASIC_FORMAT)
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
@@ -65,6 +65,8 @@ class Game:
 
         self._init_players(self.num_players, **kwargs)
 
+    def __deepcopy__(self):
+        raise NotImplemented('Game.__deepcopy__() not yet implemented')
 
     def _get_players(self, num_players, **kwargs):
         result = []
@@ -113,6 +115,8 @@ class Game:
             player = self.pid2player[self.cur_player_id]
             player.show_game_state()
             turn = player.turn_get()
+            self.history.append(turn)
+            self.logger.info(turn)
             self.turn_execute(turn)
             if self.game_state == GameState.DONE:
                 if turn.turn_type != TurnType.RESIGN:

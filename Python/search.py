@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from copy import deepcopy
 
 from bag import Bag
 from board import Board
@@ -10,13 +11,14 @@ from typing import Iterable, List
 from util import Cell, Util
 
 
-# Add copying to the appropriate places to avoid aliasing
+# TODO: Add copying to the appropriate places to avoid aliasing
 class Search:
     def __init__(self, gtree, board):
         self.gtree = gtree
         self.board = board
 
     def find_moves(self, rack)->List[Move]:
+        self.board.game.logger.debug(f'Search.find_moves: rack={rack}, board={board}')
         result = []
         for hook in self.board.hooks():
             for bdir in [BoardDirection.LEFT, BoardDirection.UP]:
@@ -25,6 +27,7 @@ class Search:
         return result
 
     def find_moves_hook_bdir(self, hook, bdir, rack)->Iterable[Move]:
+        self.board.game.logger.debug(f'Search.find_moves_hook_bdir: hook={hook}, bdir={bdir}, rack={rack}')
         for node in self.gtree.root.children.values():
             placed_letters = []
             primary_word = PlacedWord(hook, hook, '')
@@ -34,32 +37,40 @@ class Search:
             yield from self.find_moves_ss(ss)
 
     def find_moves_ss(self, ss)->Iterable[Move]:
+        self.board.game.logger.debug(f'Search.find_moves_ss: ss={ss}')
         if ss.cursor is None:
             return
         if ss.node.char == GNode.CHAR_EOW:
             if not ss.is_next_cell_letter(self.board):
-                yield move_acc.copy()
+                yield deepcopy(move_acc)
         elif ss.node.char == GNode.CHAR_REV:
             if not ss.is_next_cell_letter(self.board):
-                yield from self.find_moves_ss(ss.reverse_search_direction())
+                ss_arg = deepcopy(self)
+                ss_arg.reverse_search_direction()
+                yield from self.find_moves_ss(ss_arg)
         else:  # node.char is alphabetic
             is_char_on_board = self.board[ss.cursor] == ss.node.char
             if is_char_on_board:
-                ss.update_char_on_board(self.board)
-                if ss.cursor:
-                    yield from self.find_moves_ss(ss)
+                ss_arg = deepcopy(ss)
+                ss_arg.update_char_on_board(self.board)
+                if ss_arg.cursor:
+                    yield from self.find_moves_ss(ss_arg)
             else:
                 is_char_in_rack = ss.node.char in ss.rack
                 if is_char_in_rack:
-                    ss.update_char_in_rack(self.gtree, self.board)
-                    if ss.cursor:
-                        yield from self.find_moves_ss(ss)
+                    ss_arg = deepcopy(ss)
+                    ss_arg.update_char_in_rack(self.gtree, self.board)
+                    if ss_arg.cursor:
+                        yield from self.find_moves_ss(ss_arg)
 
                 is_blank_in_rack = GNode.CHAR_BLANK in ss.rack
                 if is_blank_in_rack:
-                    yield from self.find_moves_ss(ss.update_blank_in_rack(self.board))
+                    ss_arg = deepcopy(ss)
+                    ss_arg.update_blank_in_rack(self.board)
+                    yield from self.find_moves_ss(ss_arg)
 
     def get_secondary_words(self, placed_letters, primary_word, rack, do_update_move_acc=True):
+        self.board.game.logger.debug(f'Search.get_secondary_words: placed_letters={placed_letters}, primary_word={primary_word}, rack={rack}, do_update_move_acc={do_update_move_acc}')
         cell_beg = primary_word.cell_begin
         cell_end = primary_word.cell_end
         primary_bdir = BoardDirection.LEFT if cell_beg.y == cell_end.y else BoardDirection.UP
@@ -89,6 +100,10 @@ class SearchState:
         self.bdir = bdir
         self.rack = rack
 
+    def __deepcopy__(self, memo=None):
+        ss = SearchState(self.move_acc, self.node, self.cursor, self.bdir, self.rack)
+        return ss
+
     def __eq__(self, other):  # For unit tests
         return (self.move_acc == other.move_acc
                 and self.node == other.node
@@ -97,21 +112,16 @@ class SearchState:
                 and self.rack == other.rack
                 )
 
-    def __str__(self):
-        return (f'SearchState<move_acc={self.move_acc}, cursor={Util.cell2str(self.cursor)}, '
-                + f'bdir={self.bdir}, rack="{self.rack}", node={self.node}>'
-                )
-
-    def copy(self):
-        return SearchState(
-                self.move_acc.copy()
-                , self.node.copy()
-                , Util.cell_copy(self.cursor)
-                , self.bdir
-                , self.rack
-                )
+    def __str__(self, compact=True):
+        result = (f'SearchState<move_acc={self.move_acc}, cursor={Util.cell2str(self.cursor)}, '
+                    + f'bdir={self.bdir}, rack="{self.rack}", node='
+                    + self.node.char if compact else str(self.node)
+                    + '>'
+                    )
+        return result
 
     def get_secondary_word(self, gtree, board):
+        board.game.logger.debug(f'SearchState.get_secondary_word (self={self}: gtree=<gtree>, board=<board>')
         if self.bdir in [BoardDirection.LEFT, BoardDirection.RIGHT]:
             back = BoardDirection.UP
         else:
@@ -149,6 +159,8 @@ class SearchState:
         return cell if board.is_cell_on_board(cell) else None
 
     def reverse_search_direction(self, board, do_copy=False):
+        # board.game.logger.debug(f'SearchState.reverse_search_direction: board=<board>, do_copy={do_copy}')
+
         ss = self.copy() if do_copy else self
         ss.cursor = move_acc.placed_letters[0].cell
         ss.bdir = BoardDirection.reversed(ss.bdir)
@@ -156,6 +168,8 @@ class SearchState:
 
     def update_blank_in_rack(self, gtree, board, do_copy=False)->'SearchState':
         assert(Bag.CHAR_BLANK in self.rack)
+        board.game.logger.debug(f'SearchState.update_blank_in_rack (self={self}): gtree=<gtree>, board=<board>, do_copy={do_copy}')
+
         ss = self.copy() if do_copy else self
         ss.move_acc.placed_letters.append(PlacedLetter(ss.cursor, ss.node.char.upper()))
         ss.move_acc.primary_word = ss.move_acc.primary_word.updated(
@@ -172,6 +186,8 @@ class SearchState:
 
     def update_char_in_rack(self, gtree, board, do_copy=False)->'SearchState':
         assert(self.node.char in self.rack)
+        board.game.logger.debug(f'SearchState.update_char_in_rack (self={self}): gtree=<gtree>, board=<board>, do_copy={do_copy}')
+
         ss = self.copy() if do_copy else self
         ss.move_acc.placed_letters.append(PlacedLetter(ss.cursor, ss.node.char))
         ss.move_acc.primary_word = ss.move_acc.primary_word.updated(
@@ -188,6 +204,8 @@ class SearchState:
 
     def update_char_on_board(self, board, do_copy=False)->'SearchState':
         assert(board[self.cursor] == self.node.char)
+        board.game.logger.debug(f'SearchState.update_char_on_board (self={self}): board=<board>, do_copy={do_copy}')
+
         ss = self.copy() if do_copy else self
         # Do not update placed_letters
         ss.move_acc.primary_word = ss.move_acc.primary_word.updated(ss.cursor, ss.bdir, board[ss.cursor])

@@ -57,11 +57,6 @@ class GNode:
             child = self.add_child(s[0])
             child.add_string(s[1:])
 
-    def copy(self):
-        node = GNode(self.char)
-        node.children = self.children
-        return node
-
 
 class GTree:
     VERBOSE = False

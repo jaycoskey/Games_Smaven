@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+from copy import deepcopy
+
+
 from board_direction import BoardDirection
 from typing import List
 from util import Cell, Util
@@ -7,10 +10,17 @@ from util import Cell, Util
 
 class Move:
     def __init__(self, placed_letters:List['PlacedLetter']
-            , primary_word:'PlacedWord', secondary_words=None):
+                    , primary_word:'PlacedWord', secondary_words=None):
         self.placed_letters = placed_letters
         self.primary_word = primary_word
         self.secondary_words = secondary_words if secondary_words else []
+
+    def __deepcopy__(self, memo=None):
+       move = Move([deepcopy(pl) for pl in self.placed_letters]
+                    , deepcopy(self.primary_word)
+                    , [deepcopy(sw) for sw in deepcopy(secondary_words)]
+                    )
+       return move
 
     def __eq__(self, other):
         return (self.placed_letters == other.placed_letters
@@ -27,12 +37,6 @@ class Move:
         sec = f"secondary_words=[{sec_val}]"
         return f'Move<{pls},{pw},{sec}>'
 
-    def copy(self):
-        return Move([pl.copy() for pl in self.placed_letters]
-                    , self.primary_word.copy()
-                    , [pw.copy() for pw in self.secondary_words]
-                    )
-
     def updated(self, new_placed_letters, bdir, new_char, new_secondary_words):
         return Move(self.placed_letters.extend(new_placed_letters)
                 , Util.update_with_char(self.primary_word, bdir, new_char)
@@ -46,14 +50,14 @@ class PlacedLetter:
         self.char = upper(char) if is_blank else char.lower()
         self.cell = cell
 
+    def __deepcopy__(self, memo=None):
+        return PlacedLetter(self.char, self.cell)
+
     def __eq__(self, other):
         return self.char == other.char and self.cell == other.cell
 
     def __str__(self):
         return f"'{self.char}'@{Util.cell2str(self.cell)}"
-
-    def copy(self):
-        return PlacedLetter(self.cell, self.char)
 
     def is_blank(self):
         return isupper(self.char)
@@ -73,6 +77,9 @@ class PlacedWord:
         self.cell_end = cell_end
         self.word = word
 
+    def __deepcopy__(self, memo=None):
+        return PlacedWord(self.cell_begin, self.cell_end, self.word)
+
     def __eq__(self, other):
         return (self.cell_begin == other.cell_begin
                 and self.cell_end == other.cell_end
@@ -81,9 +88,6 @@ class PlacedWord:
 
     def __str__(self):
         return f'"{self.word}"@[{Util.cell2str(self.cell_begin)}..{Util.cell2str(self.cell_end)}]'
-
-    def copy(self):
-        return PlacedWord(self.cell_begin, self.cell_end, self.word)
 
     def cells(self):
         if self.cell_begin == self.cell_end:

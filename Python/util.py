@@ -17,10 +17,6 @@ class Util:
         return Cell(cell.x + bdir.value[0], cell.y + bdir.value[1])
 
     @staticmethod
-    def cell_copy(cell):
-        return Cell(cell.x, cell.y)
-
-    @staticmethod
     def do_rows_form_cell(rows):
         row_count = len(rows)
         are_rows_same_length = all(map(lambda row: len(row) == row_count, rows))

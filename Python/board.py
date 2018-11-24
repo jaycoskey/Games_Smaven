@@ -47,6 +47,11 @@ class Board:
         assert(self.height == self.layout.height)
         assert(self.width == self.layout.width)
 
+    # Note: Neither config nor layout are cahnged after Game is initialized.
+    def __deepcopy__(self):
+        brd = Board(config, layout, self.letters[:][:])
+        return brd
+
     def __getitem__(self, cell):
         return self.letters[cell.y][cell.x]
 
